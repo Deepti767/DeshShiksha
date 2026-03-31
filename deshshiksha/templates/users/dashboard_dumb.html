@@ -1,0 +1,164 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Deshshiksha</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="/static/css/i18n.css">
+    <script src="/static/js/i18n.js"></script>
+    <style>
+        :root { --color: #7c3aed; }
+        .welcome-hero { background: linear-gradient(135deg,#4c1d95,#7c3aed,#a855f7); }
+
+        /* Type-to-speech bar */
+        .tts-bar { background: white; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); padding: 1.2rem 1.4rem; margin-bottom: 1.8rem; }
+        .tts-bar h3 { font-size: 0.82rem; font-weight: 700; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.8rem; }
+        .tts-row { display: flex; gap: 0.6rem; }
+        .tts-input { flex: 1; padding: 11px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; font-family: inherit; outline: none; transition: border-color 0.2s; }
+        .tts-input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+        .tts-btn { background: linear-gradient(135deg,#7c3aed,#6d28d9); color: white; border: none; border-radius: 12px; padding: 11px 20px; font-size: 0.92rem; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; transition: transform 0.15s; }
+        .tts-btn:hover { transform: translateY(-1px); }
+
+        /* Quick phrase buttons */
+        .phrase-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.8rem; }
+        .phrase-chip { background: #f5f3ff; border: 1.5px solid #ddd6fe; color: #6d28d9; padding: 6px 14px; border-radius: 50px; font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+        .phrase-chip:hover { background: #ede9fe; }
+
+        /* Alphabet preview */
+        .alpha-strip { background: white; border-radius: 16px; padding: 1.2rem 1.4rem; margin-bottom: 1.8rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .alpha-strip h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #999; margin-bottom: 0.9rem; }
+        .alpha-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .alpha-chip { background: linear-gradient(135deg,#f5f3ff,#ede9fe); border-radius: 10px; width: 52px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.15s; border: 2px solid transparent; }
+        .alpha-chip:hover { transform: translateY(-3px); border-color: #7c3aed; }
+        .alpha-chip .ch-letter { font-size: 1.2rem; font-weight: 800; color: #6d28d9; line-height: 1; }
+        .alpha-chip .ch-emoji  { font-size: 0.9rem; }
+
+        /* Module cards — bigger for accessibility */
+        .modules { grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); }
+        .module-card { padding: 2rem 1.2rem 1.6rem; }
+        .module-card .mod-icon { width: 70px; height: 70px; font-size: 2.2rem; border-radius: 20px; }
+        .module-card h3 { font-size: 1.1rem; }
+        .module-card .go-btn { padding: 10px 24px; font-size: 0.92rem; }
+
+        /* Speaking indicator */
+        .speaking-pill { display: none; background: #7c3aed; color: white; border-radius: 50px; padding: 4px 14px; font-size: 0.78rem; font-weight: 600; margin-top: 0.6rem; animation: pulse-pill 1s ease-in-out infinite alternate; }
+        .speaking-pill.show { display: inline-block; }
+        @keyframes pulse-pill { from{opacity:0.7} to{opacity:1} }
+    </style>
+</head>
+<body class="theme-cognitive">
+
+    <nav class="navbar" style="background:linear-gradient(135deg,#4c1d95,#7c3aed);">
+        <a class="navbar-brand" href="/"><span class="logo-icon">🎓</span><span class="logo-text">Deshshiksha</span></a>
+        <div class="navbar-right">
+            <span class="navbar-user">Hello, <span>{% if profile and profile.full_name %}{{ profile.full_name|truncatechars:14 }}{% else %}{{ request.user.username }}{% endif %}</span></span>
+            <a class="logout-btn" href="/users/logout/">Logout</a>
+        </div>
+    </nav>
+    <div class="navbar-lang-row" style="background:rgba(76,29,149,0.85);">
+        <span class="lang-label">🌐 Language:</span>
+        <div id="lang-switcher-bar"></div>
+    </div>
+
+    <div class="page">
+
+        <div class="welcome-hero">
+            <h2>Welcome back, {% if profile and profile.full_name %}{{ profile.full_name|truncatechars:20 }}{% else %}{{ request.user.username }}{% endif %} 👋</h2>
+            <p>Your visual + audio learning space — no speaking needed!</p>
+            <div class="pts-pill">⭐ {{ progress.points }} points earned</div>
+        </div>
+
+        <!-- Type-to-Speech bar -->
+        <div class="tts-bar">
+            <h3>🔊 Type anything — I will speak it for you</h3>
+            <div class="tts-row">
+                <input class="tts-input" id="tts-input" type="text" placeholder="Type a word or sentence..." maxlength="200">
+                <button class="tts-btn" onclick="speakTyped()">🔊 Speak</button>
+            </div>
+            <div class="phrase-chips">
+                <button class="phrase-chip" onclick="speakText('Hello')">Hello</button>
+                <button class="phrase-chip" onclick="speakText('Yes')">Yes</button>
+                <button class="phrase-chip" onclick="speakText('No')">No</button>
+                <button class="phrase-chip" onclick="speakText('Help me')">Help me</button>
+                <button class="phrase-chip" onclick="speakText('I need water')">I need water</button>
+                <button class="phrase-chip" onclick="speakText('Thank you')">Thank you</button>
+                <button class="phrase-chip" onclick="speakText('I am ready')">I am ready</button>
+                <button class="phrase-chip" onclick="speakText('Start lesson')">Start lesson</button>
+            </div>
+            <div class="speaking-pill" id="speaking-pill">🔊 Speaking...</div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-value">{{ progress.points }}</div><div class="stat-label" data-i18n="total_points">Total Points</div></div>
+            <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-value">{{ progress.lessons_completed }}</div><div class="stat-label" data-i18n="lessons_done">Lessons Done</div></div>
+            <div class="stat-card">
+                <div class="stat-icon">{% if progress.points >= 200 %}🥇{% elif progress.points >= 100 %}🥈{% elif progress.points >= 50 %}🥉{% else %}🔰{% endif %}</div>
+                <div class="stat-value" style="font-size:1.1rem;">{% if progress.points >= 200 %}Expert{% elif progress.points >= 100 %}Inter.{% elif progress.points >= 50 %}Beginner{% else %}Starter{% endif %}</div>
+                <div class="stat-label" data-i18n="badge">Badge</div>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-card">
+            <div class="prog-header"><span class="prog-title" data-i18n="overall_progress">Overall Progress</span><span class="prog-count">{{ progress.lessons_completed }} / 36 lessons</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:{% widthratio progress.lessons_completed 36 100 %}%"></div></div>
+        </div>
+
+        <!-- Alphabet strip -->
+        <div class="alpha-strip">
+            <h3>Quick Alphabet Preview — click to learn with audio</h3>
+            <div class="alpha-row">
+                {% for item in alphabets %}
+                <a class="alpha-chip" href="/learning/dumb/alphabets/lesson/{{ forloop.counter0 }}/">
+                    <span class="ch-letter">{{ item.letter }}</span>
+                    <span class="ch-emoji">{{ item.emoji }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Badge -->
+        <div class="badge-card">
+            {% if progress.points >= 200 %}<div class="badge-emoji">🥇</div><div class="badge-info"><div class="badge-title">Expert Badge</div><div class="badge-sub">200+ points!</div></div>
+            {% elif progress.points >= 100 %}<div class="badge-emoji">🥈</div><div class="badge-info"><div class="badge-title">Intermediate Badge</div><div class="badge-sub">100+ points!</div></div>
+            {% elif progress.points >= 50 %}<div class="badge-emoji">🥉</div><div class="badge-info"><div class="badge-title">Beginner Badge</div><div class="badge-sub">50+ points!</div></div>
+            {% else %}<div class="badge-emoji">🔰</div><div class="badge-info"><div class="badge-title">No Badge Yet</div><div class="badge-sub">Earn 50 points to unlock!</div></div>
+            {% endif %}
+        </div>
+
+        <!-- Modules -->
+        <div class="section-heading" data-i18n="learning_modules">Learning Modules</div>
+        <div class="modules">
+            <div class="module-card"><div class="mod-icon">🔤</div><h3>Alphabets</h3><p>Watch, listen and learn A–Z</p><a class="go-btn" href="/learning/dumb/alphabets/">Start →</a></div>
+            <div class="module-card"><div class="mod-icon">🔢</div><h3>Numbers</h3><p>Learn numbers with audio</p><a class="go-btn" href="/learning/dumb/numbers/">Start →</a></div>
+            <div class="module-card"><div class="mod-icon">📝</div><h3>Practice</h3><p>Type your answers</p><a class="go-btn" href="/learning/dumb/practice/">Practice →</a></div>
+            <div class="module-card"><div class="mod-icon">🤖</div><h3>Ask Assistant</h3><p>Type to chat</p><a class="go-btn" href="/chatbot/">Open Chat →</a></div>
+        </div>
+
+    </div>
+
+    <script>
+        function speakText(text) {
+            if (!window.speechSynthesis) return;
+            window.speechSynthesis.cancel();
+            var u = new SpeechSynthesisUtterance(text);
+            u.lang = 'en-US'; u.rate = 0.85; u.pitch = 1.05;
+            var pill = document.getElementById('speaking-pill');
+            pill.className = 'speaking-pill show';
+            u.onend = function() { pill.className = 'speaking-pill'; };
+            window.speechSynthesis.speak(u);
+        }
+        function speakTyped() {
+            var val = document.getElementById('tts-input').value.trim();
+            if (val) speakText(val);
+        }
+        document.getElementById('tts-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') speakTyped();
+        });
+        I18n.buildSwitcher('lang-switcher-bar');
+    </script>
+</body>
+</html>

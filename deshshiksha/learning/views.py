@@ -34,7 +34,7 @@ def deaf_quiz(request):
 def deaf_practice(request):
     from .data import ALPHABETS, NUMBERS
     all_items = [{'key': a['letter'], 'word': a['word'], 'emoji': a['emoji'], 'type': 'alphabet'} for a in ALPHABETS]
-    all_items += [{'key': n['number'], 'word': 'Number ' + n['number'], 'emoji': n['emoji'], 'type': 'number'} for n in NUMBERS]
+    all_items += [{'key': str(n['number']), 'word': 'Number ' + str(n['number']), 'emoji': n['emoji'], 'type': 'number'} for n in NUMBERS]
     import json
     return render(request, 'learning/deaf/practice.html', {
         'items_json': json.dumps(all_items),
@@ -50,6 +50,69 @@ def deaf_practice_award(request):
         progress.save()
         return JsonResponse({'points': progress.points})
     return JsonResponse({'error': 'POST only'}, status=405)
+
+
+# ── Dumb (speech-impaired) learning ──────────────────────────
+@login_required
+def dumb_alphabets(request):
+    return render(request, 'learning/dumb/alphabets.html', {'lessons': ALPHABETS})
+
+@login_required
+def dumb_numbers(request):
+    return render(request, 'learning/dumb/numbers.html', {'lessons': NUMBERS})
+
+@login_required
+def dumb_practice(request):
+    import json
+    items = [{'key': a['letter'], 'word': a['word'], 'emoji': a['emoji']} for a in ALPHABETS]
+    items += [{'key': str(n['number']), 'word': 'Number ' + str(n['number']), 'emoji': n['emoji']} for n in NUMBERS]
+    return render(request, 'learning/dumb/practice.html', {
+        'items_json': json.dumps(items),
+        'progress': get_progress(request.user),
+    })
+
+@login_required
+def dumb_lesson(request, module, index):
+    if module == 'alphabets':
+        lessons  = ALPHABETS
+        back_url = '/learning/dumb/alphabets/'
+    elif module == 'numbers':
+        lessons  = NUMBERS
+        back_url = '/learning/dumb/numbers/'
+    else:
+        return redirect('dashboard_dumb')
+
+    if index < 0 or index >= len(lessons):
+        return redirect(back_url)
+
+    if request.method == 'POST':
+        after_lesson(request.user)
+        next_i = index + 1
+        if next_i < len(lessons):
+            return redirect('dumb_lesson', module=module, index=next_i)
+        return redirect(back_url)
+
+    item       = lessons[index]
+    content    = item.get('cognitive', item.get('deaf', ''))
+    prev_index = index - 1 if index > 0 else None
+    next_index = index + 1 if index < len(lessons) - 1 else None
+    lesson_word = item.get('word') or str(item.get('number', ''))
+
+    # Use dedicated number lesson template for numbers module
+    template = 'learning/dumb/number_lesson.html' if module == 'numbers' else 'learning/dumb/alphabet_lesson.html'
+
+    return render(request, template, {
+        'item':        item,
+        'content':     content,
+        'module':      module,
+        'index':       index,
+        'prev_index':  prev_index,
+        'next_index':  next_index,
+        'total':       len(lessons),
+        'back_url':    back_url,
+        'progress':    get_progress(request.user),
+        'lesson_word': lesson_word,
+    })
 
 @login_required
 def blind_alphabets(request):

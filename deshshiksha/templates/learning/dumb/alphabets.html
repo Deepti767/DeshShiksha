@@ -1,0 +1,79 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabets - Deshshiksha</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', Arial, sans-serif; background: #f5f3ff; min-height: 100vh; }
+        header { background: linear-gradient(135deg,#4c1d95,#7c3aed); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 1.2rem; font-weight: 700; }
+        header a { color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 7px 16px; border-radius: 50px; font-size: 0.85rem; }
+        .page { max-width: 960px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.8rem; flex-wrap: wrap; gap: 1rem; }
+        .top-bar h2 { font-size: 1.4rem; color: #4c1d95; font-weight: 800; }
+        .start-btn { background: linear-gradient(135deg,#7c3aed,#6d28d9); color: white; padding: 11px 26px; border-radius: 50px; text-decoration: none; font-size: 0.92rem; font-weight: 600; box-shadow: 0 4px 14px rgba(124,58,237,0.3); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 1rem; }
+        .letter-card { background: white; border-radius: 18px; padding: 1.4rem 0.8rem 1.2rem; text-align: center; text-decoration: none; color: inherit; box-shadow: 0 2px 10px rgba(0,0,0,0.07); border: 2px solid transparent; transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s; cursor: pointer; }
+        .letter-card:hover { transform: translateY(-5px); box-shadow: 0 10px 28px rgba(124,58,237,0.18); border-color: #7c3aed; }
+        .letter-card .big-letter { font-size: 2.4rem; font-weight: 900; color: #6d28d9; line-height: 1; }
+        .letter-card .big-emoji  { font-size: 2rem; margin: 0.3rem 0; }
+        .letter-card .word-label { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
+        .letter-card .tap-hint   { font-size: 0.65rem; color: #a78bfa; margin-top: 4px; }
+        .letter-card:nth-child(6n+1) { background: linear-gradient(135deg,#f5f3ff,#ede9fe); }
+        .letter-card:nth-child(6n+2) { background: linear-gradient(135deg,#f0fdf4,#dcfce7); }
+        .letter-card:nth-child(6n+3) { background: linear-gradient(135deg,#fff7ed,#fed7aa); }
+        .letter-card:nth-child(6n+4) { background: linear-gradient(135deg,#eff6ff,#dbeafe); }
+        .letter-card:nth-child(6n+5) { background: linear-gradient(135deg,#fefce8,#fef08a); }
+        .letter-card:nth-child(6n+6) { background: linear-gradient(135deg,#fff1f2,#fecdd3); }
+        /* Speaking highlight */
+        .letter-card.speaking { border-color: #7c3aed; box-shadow: 0 0 0 4px rgba(124,58,237,0.25); transform: scale(1.05); }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🔤 Alphabets — Watch & Listen</h1>
+        <a href="/users/dashboard/dumb/">← Dashboard</a>
+    </header>
+    <div class="page">
+        <div class="top-bar">
+            <h2>A to Z — Tap any letter to hear it</h2>
+            <a class="start-btn" href="/learning/dumb/alphabets/lesson/0/">▶ Start Lessons</a>
+        </div>
+        <div class="grid">
+            {% for item in lessons %}
+            <div class="letter-card" onclick="speakLetter('{{ item.letter }}','{{ item.word }}',this)" data-href="/learning/dumb/alphabets/lesson/{{ forloop.counter0 }}/">
+                <div class="big-letter">{{ item.letter }}</div>
+                <div class="big-emoji">{{ item.emoji }}</div>
+                <div class="word-label">{{ item.word }}</div>
+                <div class="tap-hint">🔊 Tap to hear</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <script>
+        var currentCard = null;
+        function speakLetter(letter, word, card) {
+            if (currentCard) currentCard.classList.remove('speaking');
+            currentCard = card;
+            card.classList.add('speaking');
+            if (!window.speechSynthesis) return;
+            window.speechSynthesis.cancel();
+            var steps = [letter + '.', letter + ' for ' + word + '.', letter + '.'];
+            var i = 0;
+            function next() {
+                if (i >= steps.length) { card.classList.remove('speaking'); currentCard=null; return; }
+                var u = new SpeechSynthesisUtterance(steps[i++]);
+                u.lang='en-US'; u.rate=0.82; u.pitch=1.05;
+                u.onend = function() { setTimeout(next, 400); };
+                window.speechSynthesis.speak(u);
+            }
+            next();
+            // Navigate after 2s
+            setTimeout(function() { window.location.href = card.getAttribute('data-href'); }, 2200);
+        }
+    </script>
+</body>
+</html>

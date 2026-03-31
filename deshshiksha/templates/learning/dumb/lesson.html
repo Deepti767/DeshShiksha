@@ -1,0 +1,239 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson - Deshshiksha</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', Arial, sans-serif; background: #f5f3ff; min-height: 100vh; }
+        header { background: linear-gradient(135deg,#4c1d95,#7c3aed); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 1.1rem; font-weight: 700; }
+        header a { color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 50px; font-size: 0.85rem; }
+        .pts-badge { background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 50px; font-size: 0.85rem; }
+        .container { max-width: 680px; margin: 2rem auto; padding: 0 1rem 4rem; }
+
+        /* Progress */
+        .prog-row { display: flex; justify-content: space-between; font-size: 0.82rem; color: #888; margin-bottom: 6px; }
+        .prog-track { background: #ddd6fe; border-radius: 50px; height: 8px; margin-bottom: 1.5rem; overflow: hidden; }
+        .prog-fill  { background: linear-gradient(90deg,#7c3aed,#a855f7); height: 8px; border-radius: 50px; transition: width 0.6s; }
+
+        /* Main lesson card */
+        .lesson-card { background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 2.5rem 2rem; text-align: center; margin-bottom: 1.5rem; }
+        .lc-step { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #a78bfa; margin-bottom: 0.8rem; }
+        .lc-emoji  { font-size: 6rem; line-height: 1; margin-bottom: 0.4rem; transition: transform 0.3s; }
+        .lc-emoji.pulse { animation: emoji-pulse 0.5s ease; }
+        @keyframes emoji-pulse { 0%{transform:scale(1)} 50%{transform:scale(1.15)} 100%{transform:scale(1)} }
+        .lc-letter { font-size: 4rem; font-weight: 900; color: #6d28d9; line-height: 1; margin-bottom: 0.5rem; }
+        .lc-word   { font-size: 1.4rem; font-weight: 700; color: #334155; margin-bottom: 1rem; }
+        .lc-desc   { font-size: 0.95rem; color: #64748b; background: #f5f3ff; padding: 0.9rem 1.2rem; border-radius: 12px; line-height: 1.7; text-align: left; }
+
+        /* Highlighted text while speaking */
+        .lc-desc .hl { background: #ddd6fe; border-radius: 4px; padding: 0 3px; transition: background 0.3s; }
+
+        /* Action buttons */
+        .action-row { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .act-btn { flex: 1; min-width: 120px; padding: 14px 10px; border: none; border-radius: 14px; font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.15s, box-shadow 0.15s; }
+        .act-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+        .btn-replay { background: #ede9fe; color: #6d28d9; }
+        .btn-next   { background: linear-gradient(135deg,#7c3aed,#6d28d9); color: white; box-shadow: 0 4px 14px rgba(124,58,237,0.3); }
+        .btn-back   { background: #f1f5f9; color: #475569; }
+
+        /* Type-to-answer section */
+        .answer-section { background: white; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); padding: 1.4rem; margin-bottom: 1.5rem; }
+        .answer-section h3 { font-size: 0.88rem; font-weight: 700; color: #6d28d9; margin-bottom: 0.8rem; }
+        .answer-row { display: flex; gap: 0.6rem; }
+        .answer-input { flex: 1; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; font-family: inherit; outline: none; transition: border-color 0.2s; }
+        .answer-input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+        .check-btn { background: linear-gradient(135deg,#059669,#047857); color: white; border: none; border-radius: 12px; padding: 12px 20px; font-size: 0.92rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+        /* Feedback */
+        .feedback { border-radius: 14px; padding: 1rem 1.4rem; text-align: center; display: none; animation: fb-in 0.25s ease; margin-bottom: 1rem; }
+        .feedback.show { display: block; }
+        .feedback.correct { background: #dcfce7; border: 2px solid #86efac; color: #15803d; }
+        .feedback.wrong   { background: #fee2e2; border: 2px solid #fca5a5; color: #b91c1c; }
+        .feedback .fb-icon { font-size: 2rem; margin-bottom: 0.3rem; }
+        .feedback .fb-text { font-size: 1.1rem; font-weight: 800; }
+        .feedback .fb-sub  { font-size: 0.85rem; margin-top: 4px; opacity: 0.8; }
+        @keyframes fb-in { from{transform:scale(0.9);opacity:0} to{transform:scale(1);opacity:1} }
+
+        /* TTS bar */
+        .tts-mini { background: white; border-radius: 14px; padding: 0.9rem 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; gap: 0.6rem; align-items: center; }
+        .tts-mini input { flex:1; padding:9px 12px; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none; }
+        .tts-mini input:focus { border-color:#7c3aed; }
+        .tts-mini button { background:#7c3aed; color:white; border:none; border-radius:10px; padding:9px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; font-family:inherit; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>{{ module|capfirst }} — Lesson {{ index|add:1 }}</h1>
+        <div style="display:flex;align-items:center;gap:1rem;">
+            {% if progress %}<span class="pts-badge">⭐ {{ progress.points }} pts</span>{% endif %}
+            <a href="{{ back_url }}">← Overview</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="prog-row">
+            <span>Lesson {{ index|add:1 }} of {{ total }}</span>
+            <span>+10 pts per lesson</span>
+        </div>
+        <div class="prog-track">
+            <div class="prog-fill" style="width:{% widthratio index|add:1 total 100 %}%"></div>
+        </div>
+
+        <!-- Main lesson card -->
+        <div class="lesson-card">
+            <div class="lc-step" id="lc-step">Step 1 — Watch & Listen</div>
+            {% if module == 'alphabets' %}
+                <div class="lc-emoji" id="lc-emoji">{{ item.emoji }}</div>
+                <div class="lc-letter" id="lc-letter">{{ item.letter }}</div>
+                <div class="lc-word"   id="lc-word">{{ item.word }}</div>
+            {% else %}
+                <div class="lc-emoji" id="lc-emoji">{{ item.emoji }}</div>
+                <div class="lc-letter" id="lc-letter">{{ item.number }}</div>
+                <div class="lc-word"   id="lc-word">Number {{ item.number }}</div>
+            {% endif %}
+            <div class="lc-desc" id="lc-desc">{{ content }}</div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="action-row">
+            <button class="act-btn btn-replay" onclick="replayLesson()">🔁 Replay</button>
+            {% if prev_index is not None %}
+            <a class="act-btn btn-back" style="text-align:center;text-decoration:none;" href="/learning/dumb/{{ module }}/lesson/{{ prev_index }}/">← Back</a>
+            {% endif %}
+            <form method="post" style="flex:1;" id="next-form">
+                {% csrf_token %}
+                <button class="act-btn btn-next" type="submit" style="width:100%;">
+                    {% if next_index is not None %}Next → (+10 pts){% else %}Finish ✓ (+10 pts){% endif %}
+                </button>
+            </form>
+        </div>
+
+        <!-- Type-to-answer -->
+        <div class="answer-section">
+            <h3>✏️ What is this? Type your answer below</h3>
+            <div class="answer-row">
+                <input class="answer-input" id="answer-input" type="text" placeholder="Type the letter or word..." autocomplete="off">
+                <button class="check-btn" onclick="checkAnswer()">✓ Check</button>
+            </div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="feedback" id="feedback">
+            <div class="fb-icon" id="fb-icon"></div>
+            <div class="fb-text" id="fb-text"></div>
+            <div class="fb-sub"  id="fb-sub"></div>
+        </div>
+
+        <!-- Type-to-speech mini bar -->
+        <div class="tts-mini">
+            <span style="font-size:1.2rem;">🔊</span>
+            <input type="text" id="tts-input" placeholder="Type anything to hear it spoken...">
+            <button onclick="speakTyped()">Speak</button>
+        </div>
+    </div>
+
+    <script>
+        var LABEL   = '{% if module == "alphabets" %}{{ item.letter }}{% else %}{{ item.number }}{% endif %}';
+        var WORD    = '{{ item.word|default:item.number }}';
+        var MODULE  = '{{ module }}';
+        var CONTENT = document.getElementById('lc-desc').textContent.trim();
+        var attempts = 0;
+
+        // ── TTS helpers ───────────────────────────────────────
+        function speak(text, onEnd) {
+            if (!window.speechSynthesis) { if(onEnd) onEnd(); return; }
+            window.speechSynthesis.cancel();
+            var u = new SpeechSynthesisUtterance(text);
+            u.lang='en-US'; u.rate=0.82; u.pitch=1.05;
+            if (onEnd) u.onend = onEnd;
+            window.speechSynthesis.speak(u);
+        }
+
+        function speakSteps(steps, delay, onDone) {
+            var i = 0;
+            function next() {
+                if (i >= steps.length) { if(onDone) onDone(); return; }
+                speak(steps[i++], function() { setTimeout(next, delay); });
+            }
+            next();
+        }
+
+        function speakTyped() {
+            var v = document.getElementById('tts-input').value.trim();
+            if (v) speak(v);
+        }
+        document.getElementById('tts-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') speakTyped();
+        });
+
+        // ── Lesson teaching flow ──────────────────────────────
+        function teachLesson() {
+            document.getElementById('lc-step').textContent = 'Step 1 — Watch & Listen';
+            var emoji = document.getElementById('lc-emoji');
+            emoji.classList.add('pulse');
+            setTimeout(function(){ emoji.classList.remove('pulse'); }, 500);
+
+            var steps = MODULE === 'alphabets'
+                ? ['This is the letter ' + LABEL + '.', LABEL + ' for ' + WORD + '.', LABEL + '.', CONTENT]
+                : ['This is the number ' + LABEL + '.', WORD + '.', LABEL + '.'];
+
+            speakSteps(steps, 600, function() {
+                document.getElementById('lc-step').textContent = 'Step 2 — Type your answer below';
+                speak('Now type what you see in the box below.');
+                document.getElementById('answer-input').focus();
+            });
+        }
+
+        function replayLesson() {
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('answer-input').value = '';
+            teachLesson();
+        }
+
+        // ── Answer check ──────────────────────────────────────
+        function checkAnswer() {
+            var typed   = document.getElementById('answer-input').value.trim().toLowerCase();
+            var correct = LABEL.toLowerCase();
+            var wordOk  = WORD.toLowerCase();
+            var isRight = typed === correct || typed === wordOk ||
+                          typed.includes(correct) || typed.includes(wordOk.split(' ')[0].toLowerCase());
+
+            var fb     = document.getElementById('feedback');
+            var fbIcon = document.getElementById('fb-icon');
+            var fbText = document.getElementById('fb-text');
+            var fbSub  = document.getElementById('fb-sub');
+
+            if (isRight) {
+                fb.className = 'feedback correct show';
+                fbIcon.textContent = '✅';
+                fbText.textContent = 'Correct! Well done!';
+                fbSub.textContent  = LABEL + ' for ' + WORD + '!';
+                speak('Correct! Well done! ' + LABEL + ' for ' + WORD + '!');
+                attempts = 0;
+            } else {
+                attempts++;
+                fb.className = 'feedback wrong show';
+                fbIcon.textContent = '❌';
+                fbText.textContent = 'Try again!';
+                fbSub.textContent  = attempts >= 2 ? 'Hint: The answer is ' + LABEL : 'Look at the letter above.';
+                speak(attempts >= 2 ? 'Not quite. The answer is ' + LABEL + '.' : 'Try again! Look at the letter.');
+                document.getElementById('answer-input').value = '';
+                document.getElementById('answer-input').focus();
+            }
+        }
+
+        document.getElementById('answer-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') checkAnswer();
+        });
+
+        // ── Auto-teach on load ────────────────────────────────
+        window.addEventListener('load', function() {
+            setTimeout(teachLesson, 700);
+        });
+    </script>
+</body>
+</html>

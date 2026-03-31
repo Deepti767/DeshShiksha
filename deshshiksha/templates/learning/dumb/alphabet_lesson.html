@@ -1,0 +1,341 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabet Lesson - Deshshiksha</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', Arial, sans-serif; background: #f5f3ff; min-height: 100vh; }
+        header { background: linear-gradient(135deg,#4c1d95,#7c3aed); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+        header h1 { font-size: 1.1rem; font-weight: 700; }
+        .pts-badge { background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 50px; font-size: 0.85rem; }
+        header a { color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 50px; font-size: 0.85rem; }
+        .container { max-width: 700px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+        /* Progress */
+        .prog-row { display: flex; justify-content: space-between; font-size: 0.82rem; color: #888; margin-bottom: 6px; font-weight: 600; }
+        .prog-track { background: #ddd6fe; border-radius: 50px; height: 10px; margin-bottom: 1.5rem; overflow: hidden; }
+        .prog-fill  { background: linear-gradient(90deg,#7c3aed,#a855f7); height: 10px; border-radius: 50px; transition: width 0.6s ease; }
+
+        .phase-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #a78bfa; text-align: center; margin-bottom: 0.8rem; }
+
+        /* Main card */
+        .lesson-card { background: white; border-radius: 28px; box-shadow: 0 6px 32px rgba(124,58,237,0.1); padding: 2.5rem 2rem; text-align: center; margin-bottom: 1.4rem; position: relative; overflow: hidden; }
+        .lesson-card::before { content:''; position:absolute; top:-40px; right:-40px; width:160px; height:160px; background:radial-gradient(circle,rgba(167,139,250,0.12),transparent); border-radius:50%; }
+
+        /* Step 1: Letter + image */
+        .big-emoji  { font-size: 7rem; line-height: 1; margin-bottom: 0.4rem; transition: transform 0.3s; }
+        .big-emoji.pop { animation: emoji-pop 0.4s ease; }
+        @keyframes emoji-pop { 0%{transform:scale(1)} 40%{transform:scale(1.2)} 100%{transform:scale(1)} }
+        .big-letter { font-size: 5rem; font-weight: 900; color: #6d28d9; line-height: 1; margin-bottom: 0.3rem; }
+        .big-word   { font-size: 1.8rem; font-weight: 800; color: #4c1d95; margin-bottom: 1rem; }
+
+        /* Step 2: Spell it out */
+        .spell-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 0.8rem 0; min-height: 60px; align-items: center; }
+        .spell-char { font-size: 2.2rem; font-weight: 900; color: #6d28d9; padding: 8px 14px; border-radius: 12px; background: #f5f3ff; border: 2px solid #ddd6fe; transition: all 0.2s; opacity: 0.35; }
+        .spell-char.lit  { opacity: 1; background: #ede9fe; border-color: #7c3aed; transform: scale(1.15); animation: char-pop 0.3s ease; }
+        .spell-char.done { opacity: 1; background: #ede9fe; border-color: #7c3aed; }
+        @keyframes char-pop { 0%{transform:scale(1)} 50%{transform:scale(1.25)} 100%{transform:scale(1.15)} }
+
+        /* Speaking bar */
+        .speak-bar { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 28px; margin-top: 0.5rem; }
+        .speak-dot { width: 8px; height: 8px; border-radius: 50%; background: #a78bfa; opacity: 0; }
+        .speak-dot.active { animation: dot-wave 0.6s ease-in-out infinite alternate; opacity: 1; }
+        .speak-dot:nth-child(2) { animation-delay: 0.15s; }
+        .speak-dot:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes dot-wave { from{transform:scaleY(0.4)} to{transform:scaleY(1.4)} }
+        .speak-text { font-size: 0.82rem; color: #a78bfa; font-weight: 600; }
+
+        /* Buttons */
+        .btn-row { display: flex; gap: 0.8rem; margin-bottom: 1.4rem; flex-wrap: wrap; }
+        .act-btn { flex: 1; min-width: 110px; padding: 14px 10px; border: none; border-radius: 16px; font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.15s, box-shadow 0.15s; }
+        .act-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+        .btn-replay { background: #ede9fe; color: #6d28d9; }
+        .btn-next   { background: linear-gradient(135deg,#7c3aed,#6d28d9); color: white; box-shadow: 0 4px 14px rgba(124,58,237,0.3); }
+        .btn-back   { background: #f1f5f9; color: #475569; }
+
+        /* Quiz */
+        .quiz-card { background: white; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); padding: 1.6rem; margin-bottom: 1.4rem; }
+        .quiz-card h3 { font-size: 1rem; font-weight: 700; color: #4c1d95; margin-bottom: 1rem; text-align: center; }
+        .quiz-emoji { font-size: 5rem; text-align: center; margin-bottom: 1rem; }
+
+        /* Answer options */
+        .answer-opts { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.7rem; margin-bottom: 1rem; }
+        .ans-btn { padding: 14px 8px; border: 3px solid #e2e8f0; border-radius: 14px; background: white; font-size: 1.6rem; font-weight: 900; color: #6d28d9; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+        .ans-btn:hover { border-color: #7c3aed; background: #f5f3ff; transform: translateY(-2px); }
+        .ans-btn.correct  { border-color: #22c55e; background: #dcfce7; color: #15803d; animation: pop 0.3s ease; }
+        .ans-btn.wrong    { border-color: #ef4444; background: #fee2e2; color: #b91c1c; animation: shake 0.4s ease; }
+        @keyframes pop   { 0%{transform:scale(1)} 50%{transform:scale(1.1)} 100%{transform:scale(1)} }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+        /* Type answer */
+        .type-row { display: flex; gap: 0.6rem; }
+        .type-input { flex:1; padding:12px 16px; border:2px solid #e2e8f0; border-radius:12px; font-size:1.1rem; font-family:inherit; outline:none; transition:border-color 0.2s; }
+        .type-input:focus { border-color:#7c3aed; box-shadow:0 0 0 3px rgba(124,58,237,0.1); }
+        .type-check { background:linear-gradient(135deg,#059669,#047857); color:white; border:none; border-radius:12px; padding:12px 20px; font-size:1rem; font-weight:700; cursor:pointer; font-family:inherit; }
+
+        /* Feedback */
+        .feedback { border-radius: 16px; padding: 1.2rem 1.6rem; text-align: center; display: none; animation: fb-in 0.25s ease; margin-bottom: 1rem; }
+        .feedback.show { display: block; }
+        .feedback.correct { background: #dcfce7; border: 2px solid #86efac; }
+        .feedback.wrong   { background: #fee2e2; border: 2px solid #fca5a5; }
+        .feedback .fb-icon { font-size: 2.5rem; margin-bottom: 0.3rem; }
+        .feedback .fb-text { font-size: 1.2rem; font-weight: 800; color: #1e293b; }
+        .feedback .fb-sub  { font-size: 0.88rem; color: #64748b; margin-top: 4px; }
+        @keyframes fb-in { from{transform:scale(0.9);opacity:0} to{transform:scale(1);opacity:1} }
+
+        /* TTS mini */
+        .tts-mini { background: white; border-radius: 14px; padding: 0.9rem 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; gap: 0.6rem; align-items: center; }
+        .tts-mini input { flex:1; padding:9px 12px; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none; }
+        .tts-mini input:focus { border-color:#7c3aed; }
+        .tts-mini button { background:#7c3aed; color:white; border:none; border-radius:10px; padding:9px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; font-family:inherit; }
+
+        @media (max-width:480px) { .answer-opts { grid-template-columns: repeat(3,1fr); } }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🔤 Alphabet Lesson {{ index|add:1 }}</h1>
+        <div style="display:flex;align-items:center;gap:1rem;">
+            {% if progress %}<span class="pts-badge">⭐ {{ progress.points }} pts</span>{% endif %}
+            <a href="{{ back_url }}">← Overview</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="prog-row">
+            <span>Letter {{ index|add:1 }} of {{ total }}</span>
+            <span>+10 pts per lesson</span>
+        </div>
+        <div class="prog-track">
+            <div class="prog-fill" style="width:{% widthratio index|add:1 total 100 %}%"></div>
+        </div>
+
+        <div class="phase-label" id="phase-label">Step 1 — Watch & Listen</div>
+
+        <!-- Main lesson card -->
+        <div class="lesson-card">
+            <div class="big-emoji"  id="big-emoji">{{ item.emoji }}</div>
+            <div class="big-letter" id="big-letter">{{ item.letter }}</div>
+            <div class="big-word"   id="big-word">{{ lesson_word }}</div>
+            <div class="spell-row"  id="spell-row"></div>
+            <div class="speak-bar">
+                <div class="speak-dot" id="sd1"></div>
+                <div class="speak-dot" id="sd2"></div>
+                <div class="speak-dot" id="sd3"></div>
+                <span class="speak-text" id="speak-text">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="btn-row">
+            <button class="act-btn btn-replay" onclick="startTeaching()">�� Replay</button>
+            {% if prev_index is not None %}
+            <a class="act-btn btn-back" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;" href="/learning/dumb/alphabets/lesson/{{ prev_index }}/">← Back</a>
+            {% endif %}
+            <form method="post" style="flex:1;" id="next-form">
+                {% csrf_token %}
+                <button class="act-btn btn-next" type="submit" style="width:100%;">
+                    {% if next_index is not None %}Next → (+10 pts){% else %}Finish ✓ (+10 pts){% endif %}
+                </button>
+            </form>
+        </div>
+
+        <!-- Quiz -->
+        <div class="quiz-card" id="quiz-section" style="display:none;">
+            <h3>Which letter does this image show?</h3>
+            <div class="quiz-emoji" id="quiz-emoji">{{ item.emoji }}</div>
+            <div class="answer-opts" id="answer-opts"></div>
+            <div class="type-row">
+                <input class="type-input" id="type-input" type="text" maxlength="5" placeholder="Or type the letter...">
+                <button class="type-check" onclick="checkTyped()">✓ Check</button>
+            </div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="feedback" id="feedback">
+            <div class="fb-icon" id="fb-icon"></div>
+            <div class="fb-text" id="fb-text"></div>
+            <div class="fb-sub"  id="fb-sub"></div>
+        </div>
+
+        <!-- TTS bar -->
+        <div class="tts-mini">
+            <span style="font-size:1.2rem;">🔊</span>
+            <input type="text" id="tts-input" placeholder="Type anything to hear it...">
+            <button onclick="speakTyped()">Speak</button>
+        </div>
+    </div>
+
+    <script>
+        var LETTER  = '{{ item.letter }}';
+        var WORD    = '{{ lesson_word }}';
+        var EMOJI   = '{{ item.emoji }}';
+        var TOTAL   = {{ total }};
+        var attempts = 0;
+
+        // All letters for quiz options
+        var ALL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+        // ── TTS ───────────────────────────────────────────────
+        function speak(text, onEnd) {
+            if (!window.speechSynthesis) { if(onEnd) onEnd(); return; }
+            window.speechSynthesis.cancel();
+            var u = new SpeechSynthesisUtterance(text);
+            u.lang='en-US'; u.rate=0.82; u.pitch=1.05;
+            setSpeaking(true, text);
+            u.onend  = function() { setSpeaking(false); if(onEnd) onEnd(); };
+            u.onerror = function() { setSpeaking(false); if(onEnd) onEnd(); };
+            window.speechSynthesis.speak(u);
+        }
+        function setSpeaking(on, text) {
+            ['sd1','sd2','sd3'].forEach(function(id){
+                document.getElementById(id).className = 'speak-dot' + (on ? ' active' : '');
+            });
+            document.getElementById('speak-text').textContent = on ? (text||'Speaking...') : 'Tap 🔁 to replay';
+        }
+        function speakTyped() {
+            var v = document.getElementById('tts-input').value.trim();
+            if (v) speak(v);
+        }
+        document.getElementById('tts-input').addEventListener('keydown', function(e){ if(e.key==='Enter') speakTyped(); });
+
+        // ── Build spell row ───────────────────────────────────
+        function buildSpellRow() {
+            var row = document.getElementById('spell-row');
+            row.innerHTML = '';
+            WORD.split('').forEach(function(ch, i) {
+                var span = document.createElement('span');
+                span.className = 'spell-char';
+                span.textContent = ch.toUpperCase();
+                span.id = 'sc-' + i;
+                row.appendChild(span);
+            });
+        }
+
+        // ── Spell animation ───────────────────────────────────
+        function animateSpell(onDone) {
+            // Reset
+            WORD.split('').forEach(function(_, i){
+                var el = document.getElementById('sc-' + i);
+                if (el) el.className = 'spell-char';
+            });
+            var i = 0;
+            function next() {
+                if (i >= WORD.length) { if(onDone) onDone(); return; }
+                var el = document.getElementById('sc-' + i);
+                if (el) {
+                    el.className = 'spell-char lit';
+                    setTimeout(function(idx){ return function(){
+                        var e = document.getElementById('sc-'+idx);
+                        if(e) e.className = 'spell-char done';
+                    }; }(i), 400);
+                }
+                speak(WORD[i].toUpperCase(), function() {
+                    i++;
+                    setTimeout(next, 150);
+                });
+            }
+            next();
+        }
+
+        // ── Full teaching sequence ────────────────────────────
+        function startTeaching() {
+            document.getElementById('phase-label').textContent = 'Step 1 — Watch & Listen';
+            document.getElementById('quiz-section').style.display = 'none';
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('big-emoji').classList.add('pop');
+            setTimeout(function(){ document.getElementById('big-emoji').classList.remove('pop'); }, 400);
+
+            speak('This is the letter ' + LETTER + '.', function() {
+                setTimeout(function() {
+                    speak(LETTER + ' for ' + WORD + '.', function() {
+                        setTimeout(function() {
+                            document.getElementById('phase-label').textContent = 'Step 2 — Spell it out!';
+                            speak('Let us spell ' + WORD + '.', function() {
+                                animateSpell(function() {
+                                    setTimeout(function() {
+                                        speak(WORD + '.', function() {
+                                            setTimeout(function() {
+                                                document.getElementById('phase-label').textContent = 'Step 3 — Answer the question';
+                                                speak('Now answer the question below.', function() {
+                                                    showQuiz();
+                                                });
+                                            }, 500);
+                                        });
+                                    }, 400);
+                                });
+                            });
+                        }, 500);
+                    });
+                }, 400);
+            });
+        }
+
+        // ── Quiz ──────────────────────────────────────────────
+        function showQuiz() {
+            attempts = 0;
+            document.getElementById('quiz-section').style.display = 'block';
+            document.getElementById('type-input').value = '';
+            document.getElementById('feedback').className = 'feedback';
+
+            // 4 options: correct + 3 random
+            var others = ALL_LETTERS.filter(function(l){ return l !== LETTER; });
+            others.sort(function(){ return Math.random()-0.5; });
+            var opts = [LETTER].concat(others.slice(0,3)).sort(function(){ return Math.random()-0.5; });
+
+            var ao = document.getElementById('answer-opts');
+            ao.innerHTML = '';
+            opts.forEach(function(l) {
+                var btn = document.createElement('button');
+                btn.className = 'ans-btn';
+                btn.textContent = l;
+                btn.onclick = function() { selectAnswer(l, btn); };
+                ao.appendChild(btn);
+            });
+            document.getElementById('type-input').focus();
+        }
+
+        function selectAnswer(chosen, btn) {
+            document.querySelectorAll('.ans-btn').forEach(function(b){ b.disabled=true; });
+            giveFeedback(chosen === LETTER, btn);
+        }
+        function checkTyped() {
+            var val = document.getElementById('type-input').value.trim().toUpperCase();
+            giveFeedback(val === LETTER || val === WORD.toUpperCase(), null);
+        }
+        document.getElementById('type-input').addEventListener('keydown', function(e){ if(e.key==='Enter') checkTyped(); });
+
+        function giveFeedback(correct, btn) {
+            var fb = document.getElementById('feedback');
+            if (correct) {
+                if (btn) btn.classList.add('correct');
+                fb.className = 'feedback correct show';
+                document.getElementById('fb-icon').textContent = '✅';
+                document.getElementById('fb-text').textContent = 'Good job! Correct!';
+                document.getElementById('fb-sub').textContent  = LETTER + ' for ' + WORD + '!';
+                speak('Good job! Correct! ' + LETTER + ' for ' + WORD + '!');
+            } else {
+                attempts++;
+                if (btn) btn.classList.add('wrong');
+                document.querySelectorAll('.ans-btn').forEach(function(b){
+                    if (b.textContent === LETTER) b.classList.add('correct');
+                });
+                fb.className = 'feedback wrong show';
+                document.getElementById('fb-icon').textContent = '❌';
+                document.getElementById('fb-text').textContent = 'Try again!';
+                document.getElementById('fb-sub').textContent  = attempts >= 2 ? 'Hint: The answer is ' + LETTER : 'Look at the letter above.';
+                speak(attempts >= 2 ? 'Not quite. The answer is ' + LETTER + '.' : 'Try again!');
+                document.getElementById('type-input').value = '';
+            }
+        }
+
+        // ── Init ──────────────────────────────────────────────
+        buildSpellRow();
+        window.addEventListener('load', function() { setTimeout(startTeaching, 700); });
+    </script>
+</body>
+</html>

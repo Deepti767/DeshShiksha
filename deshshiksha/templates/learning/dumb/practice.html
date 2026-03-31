@@ -1,0 +1,204 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice - Deshshiksha</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f5f3ff; min-height: 100vh; }
+        header { background: linear-gradient(135deg,#4c1d95,#7c3aed); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 1.2rem; font-weight: 700; }
+        header a { color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 7px 16px; border-radius: 50px; font-size: 0.85rem; }
+        .page { max-width: 680px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+        /* Score bar */
+        .score-bar { background: white; border-radius: 16px; padding: 1rem 1.4rem; margin-bottom: 1.5rem; display: flex; gap: 1.5rem; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.06); flex-wrap: wrap; }
+        .sc-item .sv { font-size: 1.8rem; font-weight: 900; color: #7c3aed; }
+        .sc-item .sl { font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+
+        /* Question card */
+        .q-card { background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 2.5rem 2rem; text-align: center; margin-bottom: 1.5rem; }
+        .q-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #a78bfa; margin-bottom: 0.8rem; }
+        .q-emoji  { font-size: 6rem; line-height: 1; margin-bottom: 0.5rem; cursor: pointer; transition: transform 0.2s; }
+        .q-emoji:hover { transform: scale(1.08); }
+        .q-hint   { font-size: 0.82rem; color: #94a3b8; margin-top: 0.5rem; }
+
+        /* Answer area */
+        .answer-card { background: white; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); padding: 1.4rem; margin-bottom: 1.2rem; }
+        .answer-card h3 { font-size: 0.88rem; font-weight: 700; color: #6d28d9; margin-bottom: 0.8rem; }
+        .answer-row { display: flex; gap: 0.6rem; margin-bottom: 0.8rem; }
+        .answer-input { flex: 1; padding: 13px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1.1rem; font-family: inherit; outline: none; transition: border-color 0.2s; }
+        .answer-input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+        .check-btn { background: linear-gradient(135deg,#059669,#047857); color: white; border: none; border-radius: 12px; padding: 13px 22px; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+        /* Quick-select buttons */
+        .quick-opts { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+        .q-opt { background: #f5f3ff; border: 2px solid #ddd6fe; color: #6d28d9; padding: 8px 16px; border-radius: 50px; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+        .q-opt:hover { background: #ede9fe; border-color: #7c3aed; }
+
+        /* Feedback */
+        .feedback { border-radius: 14px; padding: 1rem 1.4rem; text-align: center; display: none; animation: fb-in 0.25s ease; margin-bottom: 1rem; }
+        .feedback.show { display: block; }
+        .feedback.correct { background: #dcfce7; border: 2px solid #86efac; color: #15803d; }
+        .feedback.wrong   { background: #fee2e2; border: 2px solid #fca5a5; color: #b91c1c; }
+        .feedback .fb-icon { font-size: 2.2rem; margin-bottom: 0.3rem; }
+        .feedback .fb-text { font-size: 1.1rem; font-weight: 800; }
+        .feedback .fb-sub  { font-size: 0.85rem; margin-top: 4px; opacity: 0.8; }
+        @keyframes fb-in { from{transform:scale(0.9);opacity:0} to{transform:scale(1);opacity:1} }
+
+        /* Nav */
+        .nav-row { display: flex; gap: 0.8rem; }
+        .nav-btn { flex: 1; padding: 13px; border: none; border-radius: 50px; font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.15s; }
+        .nav-btn:hover { transform: translateY(-2px); }
+        .btn-prev { background: #f1f5f9; color: #475569; }
+        .btn-next { background: linear-gradient(135deg,#7c3aed,#6d28d9); color: white; box-shadow: 0 4px 14px rgba(124,58,237,0.3); }
+
+        /* TTS mini */
+        .tts-mini { background: white; border-radius: 14px; padding: 0.9rem 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; gap: 0.6rem; align-items: center; margin-top: 1rem; }
+        .tts-mini input { flex:1; padding:9px 12px; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none; }
+        .tts-mini input:focus { border-color:#7c3aed; }
+        .tts-mini button { background:#7c3aed; color:white; border:none; border-radius:10px; padding:9px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; font-family:inherit; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>✏️ Practice Mode</h1>
+        <a href="/users/dashboard/dumb/">← Dashboard</a>
+    </header>
+
+    <div class="page">
+        <div class="score-bar">
+            <div class="sc-item"><div class="sv" id="sc-pts">{{ progress.points }}</div><div class="sl">Points</div></div>
+            <div class="sc-item"><div class="sv" id="sc-correct">0</div><div class="sl">Correct</div></div>
+            <div class="sc-item"><div class="sv" id="sc-streak">0</div><div class="sl">Streak 🔥</div></div>
+        </div>
+
+        <div class="q-card">
+            <div class="q-label">What is this? Type or select below</div>
+            <div class="q-emoji" id="q-emoji" onclick="speakCurrent()" title="Click to hear">🍎</div>
+            <div class="q-hint">🔊 Click the image to hear it</div>
+        </div>
+
+        <div class="feedback" id="feedback">
+            <div class="fb-icon" id="fb-icon"></div>
+            <div class="fb-text" id="fb-text"></div>
+            <div class="fb-sub"  id="fb-sub"></div>
+        </div>
+
+        <div class="answer-card">
+            <h3>✏️ Type your answer</h3>
+            <div class="answer-row">
+                <input class="answer-input" id="answer-input" type="text" placeholder="Type the letter or word..." autocomplete="off">
+                <button class="check-btn" onclick="checkAnswer()">✓ Check</button>
+            </div>
+            <div class="quick-opts" id="quick-opts"></div>
+        </div>
+
+        <div class="nav-row">
+            <button class="nav-btn btn-prev" onclick="prevItem()">← Previous</button>
+            <button class="nav-btn btn-next" onclick="nextItem()">Next →</button>
+        </div>
+
+        <div class="tts-mini">
+            <span style="font-size:1.2rem;">🔊</span>
+            <input type="text" id="tts-input" placeholder="Type anything to hear it...">
+            <button onclick="speakTyped()">Speak</button>
+        </div>
+    </div>
+
+    <script>
+        var ITEMS = {{ items_json|safe }};
+        var idx = 0, score = 0, correct = 0, streak = 0, attempts = 0;
+        var CSRF = '{{ csrf_token }}';
+
+        function speak(text, onEnd) {
+            if (!window.speechSynthesis) { if(onEnd) onEnd(); return; }
+            window.speechSynthesis.cancel();
+            var u = new SpeechSynthesisUtterance(text);
+            u.lang='en-US'; u.rate=0.82; u.pitch=1.05;
+            if (onEnd) u.onend = onEnd;
+            window.speechSynthesis.speak(u);
+        }
+
+        function speakTyped() {
+            var v = document.getElementById('tts-input').value.trim();
+            if (v) speak(v);
+        }
+        document.getElementById('tts-input').addEventListener('keydown', function(e){ if(e.key==='Enter') speakTyped(); });
+
+        function render() {
+            var item = ITEMS[idx];
+            document.getElementById('q-emoji').textContent = item.emoji;
+            document.getElementById('answer-input').value = '';
+            document.getElementById('feedback').className = 'feedback';
+            attempts = 0;
+
+            // Quick-select options: correct + 3 random
+            var others = ITEMS.filter(function(x){ return x.key !== item.key; });
+            var shuffled = others.sort(function(){ return Math.random()-0.5; }).slice(0,3);
+            var opts = [item].concat(shuffled).sort(function(){ return Math.random()-0.5; });
+            var qo = document.getElementById('quick-opts');
+            qo.innerHTML = '';
+            opts.forEach(function(o) {
+                var btn = document.createElement('button');
+                btn.className = 'q-opt';
+                btn.textContent = o.emoji + ' ' + o.key;
+                btn.onclick = function() {
+                    document.getElementById('answer-input').value = o.key;
+                    checkAnswer();
+                };
+                qo.appendChild(btn);
+            });
+
+            // Auto-speak
+            speak(item.word + '. ' + item.key + '.');
+        }
+
+        function speakCurrent() {
+            var item = ITEMS[idx];
+            speak(item.word + '. ' + item.key + '.');
+        }
+
+        function checkAnswer() {
+            var typed = document.getElementById('answer-input').value.trim().toLowerCase();
+            var item  = ITEMS[idx];
+            var ok    = typed === item.key.toLowerCase() || typed === item.word.toLowerCase() ||
+                        typed.includes(item.key.toLowerCase());
+
+            var fb = document.getElementById('feedback');
+            if (ok) {
+                correct++; streak++; score += 10;
+                document.getElementById('sc-correct').textContent = correct;
+                document.getElementById('sc-streak').textContent  = streak;
+                document.getElementById('sc-pts').textContent     = parseInt(document.getElementById('sc-pts').textContent) + 10;
+                fb.className = 'feedback correct show';
+                document.getElementById('fb-icon').textContent = '✅';
+                document.getElementById('fb-text').textContent = 'Correct! Well done!';
+                document.getElementById('fb-sub').textContent  = item.key + ' for ' + item.word + '!';
+                speak('Correct! Well done! ' + item.key + ' for ' + item.word + '!');
+                fetch('/learning/deaf/practice/award/', { method:'POST', headers:{'X-CSRFToken':CSRF,'Content-Type':'application/json'}, body:'{}' }).catch(function(){});
+                setTimeout(nextItem, 1800);
+            } else {
+                attempts++; streak = 0;
+                document.getElementById('sc-streak').textContent = 0;
+                fb.className = 'feedback wrong show';
+                document.getElementById('fb-icon').textContent = '❌';
+                document.getElementById('fb-text').textContent = 'Try again!';
+                document.getElementById('fb-sub').textContent  = attempts >= 2 ? 'Hint: ' + item.key : 'Look at the image above.';
+                speak(attempts >= 2 ? 'Not quite. The answer is ' + item.key : 'Try again!');
+                document.getElementById('answer-input').value = '';
+                document.getElementById('answer-input').focus();
+            }
+        }
+
+        document.getElementById('answer-input').addEventListener('keydown', function(e){ if(e.key==='Enter') checkAnswer(); });
+
+        function nextItem() { idx = (idx+1) % ITEMS.length; render(); }
+        function prevItem() { idx = (idx-1+ITEMS.length) % ITEMS.length; render(); }
+
+        render();
+    </script>
+</body>
+</html>

@@ -34,14 +34,14 @@ ALPHABETS = [
 ]
 
 NUMBERS = [
-    {'number': '1', 'braille_dots': [2],        'deaf': 'Index finger pointing up, all other fingers closed.', 'blind': 'Braille number 1. One dot at position 2.', 'cognitive': '☝️ One finger up!', 'emoji': '☝️'},
-    {'number': '2', 'braille_dots': [2,3],      'deaf': 'Index and middle fingers pointing up.', 'blind': 'Braille number 2. Dots at positions 2 and 3.', 'cognitive': '✌️ Two fingers — like a peace sign!', 'emoji': '✌️'},
-    {'number': '3', 'braille_dots': [2,5],      'deaf': 'Thumb, index, and middle fingers extended.', 'blind': 'Braille number 3. Dots at positions 2 and 5.', 'cognitive': '🤟 Three fingers up!', 'emoji': '🤟'},
-    {'number': '4', 'braille_dots': [2,5,6],    'deaf': 'Four fingers extended, thumb folded in.', 'blind': 'Braille number 4. Dots at positions 2, 5, and 6.', 'cognitive': '🍀 Four leaves on a clover!', 'emoji': '🍀'},
-    {'number': '5', 'braille_dots': [2,6],      'deaf': 'All five fingers spread open.', 'blind': 'Braille number 5. Dots at positions 2 and 6.', 'cognitive': '🖐️ Five fingers — a whole hand!', 'emoji': '🖐️'},
-    {'number': '6', 'braille_dots': [2,3,5],    'deaf': 'Thumb and pinky touch, other fingers extended.', 'blind': 'Braille number 6. Dots at positions 2, 3, and 5.', 'cognitive': '🎲 Six dots on a dice!', 'emoji': '🎲'},
-    {'number': '7', 'braille_dots': [2,3,5,6],  'deaf': 'Thumb and ring finger touch, other fingers extended.', 'blind': 'Braille number 7. Dots at positions 2, 3, 5, and 6.', 'cognitive': '🌈 Seven colors in a rainbow!', 'emoji': '🌈'},
-    {'number': '8', 'braille_dots': [2,3,6],    'deaf': 'Thumb and middle finger touch, other fingers extended.', 'blind': 'Braille number 8. Dots at positions 2, 3, and 6.', 'cognitive': '🎱 Eight ball!', 'emoji': '🎱'},
-    {'number': '9', 'braille_dots': [3,5],      'deaf': 'Thumb and index finger touch in a circle, other fingers up.', 'blind': 'Braille number 9. Dots at positions 3 and 5.', 'cognitive': '🐱 Nine lives of a cat!', 'emoji': '🐱'},
-    {'number': '10', 'braille_dots': [1,2],     'deaf': 'Closed fist with thumb up, shake slightly — or show 1 then 0.', 'blind': 'Braille number 10. Dots at positions 1 and 2.', 'cognitive': '🙌 Ten fingers — both hands!', 'emoji': '🙌'},
+    {'number': 1,  'word': 'One',   'count_emoji': '🍎', 'braille_dots': [2],        'deaf': 'Index finger pointing up, all other fingers closed.', 'blind': 'Braille number 1. One dot at position 2.', 'cognitive': '☝️ One finger up!', 'emoji': '☝️'},
+    {'number': 2,  'word': 'Two',   'count_emoji': '🍎', 'braille_dots': [2,3],      'deaf': 'Index and middle fingers pointing up.', 'blind': 'Braille number 2. Dots at positions 2 and 3.', 'cognitive': '✌️ Two fingers — like a peace sign!', 'emoji': '✌️'},
+    {'number': 3,  'word': 'Three', 'count_emoji': '🍎', 'braille_dots': [2,5],      'deaf': 'Thumb, index, and middle fingers extended.', 'blind': 'Braille number 3. Dots at positions 2 and 5.', 'cognitive': '🤟 Three fingers up!', 'emoji': '🤟'},
+    {'number': 4,  'word': 'Four',  'count_emoji': '⭐', 'braille_dots': [2,5,6],    'deaf': 'Four fingers extended, thumb folded in.', 'blind': 'Braille number 4. Dots at positions 2, 5, and 6.', 'cognitive': '🍀 Four leaves on a clover!', 'emoji': '🍀'},
+    {'number': 5,  'word': 'Five',  'count_emoji': '⭐', 'braille_dots': [2,6],      'deaf': 'All five fingers spread open.', 'blind': 'Braille number 5. Dots at positions 2 and 6.', 'cognitive': '🖐️ Five fingers — a whole hand!', 'emoji': '🖐️'},
+    {'number': 6,  'word': 'Six',   'count_emoji': '🌸', 'braille_dots': [2,3,5],    'deaf': 'Thumb and pinky touch, other fingers extended.', 'blind': 'Braille number 6. Dots at positions 2, 3, and 5.', 'cognitive': '🎲 Six dots on a dice!', 'emoji': '🎲'},
+    {'number': 7,  'word': 'Seven', 'count_emoji': '🌸', 'braille_dots': [2,3,5,6],  'deaf': 'Thumb and ring finger touch, other fingers extended.', 'blind': 'Braille number 7. Dots at positions 2, 3, 5, and 6.', 'cognitive': '🌈 Seven colors in a rainbow!', 'emoji': '🌈'},
+    {'number': 8,  'word': 'Eight', 'count_emoji': '🎈', 'braille_dots': [2,3,6],    'deaf': 'Thumb and middle finger touch, other fingers extended.', 'blind': 'Braille number 8. Dots at positions 2, 3, and 6.', 'cognitive': '🎱 Eight ball!', 'emoji': '🎱'},
+    {'number': 9,  'word': 'Nine',  'count_emoji': '🎈', 'braille_dots': [3,5],      'deaf': 'Thumb and index finger touch in a circle, other fingers up.', 'blind': 'Braille number 9. Dots at positions 3 and 5.', 'cognitive': '🐱 Nine lives of a cat!', 'emoji': '🐱'},
+    {'number': 10, 'word': 'Ten',   'count_emoji': '🏆', 'braille_dots': [1,2],      'deaf': 'Closed fist with thumb up, shake slightly — or show 1 then 0.', 'blind': 'Braille number 10. Dots at positions 1 and 2.', 'cognitive': '🙌 Ten fingers — both hands!', 'emoji': '🙌'},
 ]

@@ -1,0 +1,383 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Lesson - Deshshiksha</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', Arial, sans-serif; background: #f5f3ff; min-height: 100vh; }
+
+        header { background: linear-gradient(135deg,#4c1d95,#7c3aed); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+        header h1 { font-size: 1.1rem; font-weight: 700; }
+        .pts-badge { background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 50px; font-size: 0.85rem; }
+        header a { color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 50px; font-size: 0.85rem; }
+
+        .container { max-width: 700px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+        /* Progress */
+        .prog-row { display: flex; justify-content: space-between; font-size: 0.82rem; color: #888; margin-bottom: 6px; font-weight: 600; }
+        .prog-track { background: #ddd6fe; border-radius: 50px; height: 10px; margin-bottom: 1.5rem; overflow: hidden; }
+        .prog-fill  { background: linear-gradient(90deg,#7c3aed,#a855f7); height: 10px; border-radius: 50px; transition: width 0.6s ease; }
+
+        /* Phase label */
+        .phase-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #a78bfa; text-align: center; margin-bottom: 0.8rem; }
+
+        /* Main number card */
+        .num-card { background: white; border-radius: 28px; box-shadow: 0 6px 32px rgba(124,58,237,0.1); padding: 2.5rem 2rem; text-align: center; margin-bottom: 1.4rem; position: relative; overflow: hidden; }
+        .num-card::before { content: ''; position: absolute; top: -40px; right: -40px; width: 160px; height: 160px; background: radial-gradient(circle, rgba(167,139,250,0.12), transparent); border-radius: 50%; }
+
+        .big-number { font-size: 7rem; font-weight: 900; color: #6d28d9; line-height: 1; margin-bottom: 0.3rem; transition: transform 0.3s; }
+        .big-number.pop { animation: num-pop 0.4s ease; }
+        @keyframes num-pop { 0%{transform:scale(1)} 40%{transform:scale(1.2)} 100%{transform:scale(1)} }
+
+        .num-word { font-size: 1.8rem; font-weight: 800; color: #4c1d95; margin-bottom: 1.2rem; }
+
+        /* Object display */
+        .objects-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; min-height: 80px; align-items: center; margin-bottom: 1rem; }
+        .obj-item { font-size: 2.8rem; transition: transform 0.2s, filter 0.2s; filter: grayscale(0.6) opacity(0.4); border-radius: 12px; padding: 4px; }
+        .obj-item.lit { filter: none; transform: scale(1.2); animation: obj-bounce 0.35s ease; }
+        .obj-item.done { filter: none; }
+        @keyframes obj-bounce { 0%{transform:scale(1)} 50%{transform:scale(1.35)} 100%{transform:scale(1.2)} }
+
+        /* Count display */
+        .count-display { font-size: 1.4rem; font-weight: 800; color: #7c3aed; min-height: 2rem; margin-bottom: 0.5rem; letter-spacing: 0.1em; }
+
+        /* Speaking indicator */
+        .speak-bar { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 28px; margin-bottom: 0.5rem; }
+        .speak-dot { width: 8px; height: 8px; border-radius: 50%; background: #a78bfa; opacity: 0; }
+        .speak-dot.active { animation: dot-wave 0.6s ease-in-out infinite alternate; opacity: 1; }
+        .speak-dot:nth-child(2) { animation-delay: 0.15s; }
+        .speak-dot:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes dot-wave { from{transform:scaleY(0.4)} to{transform:scaleY(1.4)} }
+        .speak-text { font-size: 0.82rem; color: #a78bfa; font-weight: 600; }
+
+        /* Action buttons */
+        .btn-row { display: flex; gap: 0.8rem; margin-bottom: 1.4rem; flex-wrap: wrap; }
+        .act-btn { flex: 1; min-width: 110px; padding: 14px 10px; border: none; border-radius: 16px; font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.15s, box-shadow 0.15s; }
+        .act-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+        .btn-replay { background: #ede9fe; color: #6d28d9; }
+        .btn-next   { background: linear-gradient(135deg,#7c3aed,#6d28d9); color: white; box-shadow: 0 4px 14px rgba(124,58,237,0.3); }
+        .btn-back   { background: #f1f5f9; color: #475569; }
+
+        /* Quiz section */
+        .quiz-card { background: white; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); padding: 1.6rem; margin-bottom: 1.4rem; }
+        .quiz-card h3 { font-size: 1rem; font-weight: 700; color: #4c1d95; margin-bottom: 1rem; text-align: center; }
+        .quiz-objects { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; font-size: 2.4rem; margin-bottom: 1.2rem; }
+
+        /* Answer options */
+        .answer-opts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7rem; margin-bottom: 1rem; }
+        .ans-btn { padding: 14px 8px; border: 3px solid #e2e8f0; border-radius: 14px; background: white; font-size: 1.4rem; font-weight: 900; color: #6d28d9; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+        .ans-btn:hover { border-color: #7c3aed; background: #f5f3ff; transform: translateY(-2px); }
+        .ans-btn.correct  { border-color: #22c55e; background: #dcfce7; color: #15803d; animation: pop 0.3s ease; }
+        .ans-btn.wrong    { border-color: #ef4444; background: #fee2e2; color: #b91c1c; animation: shake 0.4s ease; }
+        @keyframes pop   { 0%{transform:scale(1)} 50%{transform:scale(1.1)} 100%{transform:scale(1)} }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+        /* Type answer */
+        .type-row { display: flex; gap: 0.6rem; }
+        .type-input { flex: 1; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1.1rem; font-family: inherit; outline: none; transition: border-color 0.2s; }
+        .type-input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+        .type-check { background: linear-gradient(135deg,#059669,#047857); color: white; border: none; border-radius: 12px; padding: 12px 20px; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+        /* Feedback */
+        .feedback { border-radius: 16px; padding: 1.2rem 1.6rem; text-align: center; display: none; animation: fb-in 0.25s ease; margin-bottom: 1rem; }
+        .feedback.show { display: block; }
+        .feedback.correct { background: #dcfce7; border: 2px solid #86efac; }
+        .feedback.wrong   { background: #fee2e2; border: 2px solid #fca5a5; }
+        .feedback .fb-icon { font-size: 2.5rem; margin-bottom: 0.3rem; }
+        .feedback .fb-text { font-size: 1.2rem; font-weight: 800; color: #1e293b; }
+        .feedback .fb-sub  { font-size: 0.88rem; color: #64748b; margin-top: 4px; }
+        @keyframes fb-in { from{transform:scale(0.9);opacity:0} to{transform:scale(1);opacity:1} }
+
+        /* TTS mini */
+        .tts-mini { background: white; border-radius: 14px; padding: 0.9rem 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; gap: 0.6rem; align-items: center; }
+        .tts-mini input { flex:1; padding:9px 12px; border:2px solid #e2e8f0; border-radius:10px; font-size:0.9rem; font-family:inherit; outline:none; }
+        .tts-mini input:focus { border-color:#7c3aed; }
+        .tts-mini button { background:#7c3aed; color:white; border:none; border-radius:10px; padding:9px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; font-family:inherit; }
+
+        @media (max-width: 480px) {
+            .big-number { font-size: 5rem; }
+            .answer-opts { grid-template-columns: repeat(3,1fr); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🔢 Number Lesson {{ index|add:1 }}</h1>
+        <div style="display:flex;align-items:center;gap:1rem;">
+            {% if progress %}<span class="pts-badge">⭐ {{ progress.points }} pts</span>{% endif %}
+            <a href="{{ back_url }}">← Overview</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="prog-row">
+            <span>Number {{ index|add:1 }} of {{ total }}</span>
+            <span>+10 pts per lesson</span>
+        </div>
+        <div class="prog-track">
+            <div class="prog-fill" style="width:{% widthratio index|add:1 total 100 %}%"></div>
+        </div>
+
+        <!-- Phase label -->
+        <div class="phase-label" id="phase-label">Step 1 — Watch & Listen</div>
+
+        <!-- Main number card -->
+        <div class="num-card">
+            <div class="big-number" id="big-number">{{ item.number }}</div>
+            <div class="num-word"   id="num-word">{{ item.word }}</div>
+            <div class="objects-row" id="objects-row"></div>
+            <div class="count-display" id="count-display"></div>
+            <div class="speak-bar">
+                <div class="speak-dot" id="sd1"></div>
+                <div class="speak-dot" id="sd2"></div>
+                <div class="speak-dot" id="sd3"></div>
+                <span class="speak-text" id="speak-text">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="btn-row">
+            <button class="act-btn btn-replay" onclick="startTeaching()">🔁 Replay</button>
+            {% if prev_index is not None %}
+            <a class="act-btn btn-back" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;" href="/learning/dumb/numbers/lesson/{{ prev_index }}/">← Back</a>
+            {% endif %}
+            <form method="post" style="flex:1;" id="next-form">
+                {% csrf_token %}
+                <button class="act-btn btn-next" type="submit" style="width:100%;">
+                    {% if next_index is not None %}Next → (+10 pts){% else %}Finish ✓ (+10 pts){% endif %}
+                </button>
+            </form>
+        </div>
+
+        <!-- Quiz section -->
+        <div class="quiz-card" id="quiz-section" style="display:none;">
+            <h3 id="quiz-question">How many 🍎 do you see?</h3>
+            <div class="quiz-objects" id="quiz-objects"></div>
+            <div class="answer-opts" id="answer-opts"></div>
+            <div class="type-row">
+                <input class="type-input" id="type-input" type="number" min="1" max="10" placeholder="Or type the number...">
+                <button class="type-check" onclick="checkTyped()">✓ Check</button>
+            </div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="feedback" id="feedback">
+            <div class="fb-icon" id="fb-icon"></div>
+            <div class="fb-text" id="fb-text"></div>
+            <div class="fb-sub"  id="fb-sub"></div>
+        </div>
+
+        <!-- TTS bar -->
+        <div class="tts-mini">
+            <span style="font-size:1.2rem;">��</span>
+            <input type="text" id="tts-input" placeholder="Type anything to hear it...">
+            <button onclick="speakTyped()">Speak</button>
+        </div>
+    </div>
+
+    <script>
+        // ── Data ──────────────────────────────────────────────
+        var NUMBER   = {{ item.number }};
+        var WORD     = '{{ item.word }}';
+        var EMOJI    = '{{ item.emoji }}';
+        var TOTAL    = {{ total }};
+        var attempts = 0;
+
+        // ── TTS ───────────────────────────────────────────────
+        function speak(text, onEnd) {
+            if (!window.speechSynthesis) { if(onEnd) onEnd(); return; }
+            window.speechSynthesis.cancel();
+            var u = new SpeechSynthesisUtterance(text);
+            u.lang='en-US'; u.rate=0.82; u.pitch=1.05;
+            setSpeaking(true, text);
+            u.onend  = function() { setSpeaking(false); if(onEnd) onEnd(); };
+            u.onerror = function() { setSpeaking(false); if(onEnd) onEnd(); };
+            window.speechSynthesis.speak(u);
+        }
+
+        function setSpeaking(on, text) {
+            ['sd1','sd2','sd3'].forEach(function(id) {
+                document.getElementById(id).className = 'speak-dot' + (on ? ' active' : '');
+            });
+            document.getElementById('speak-text').textContent = on ? (text||'Speaking...') : 'Tap 🔁 to replay';
+        }
+
+        function speakTyped() {
+            var v = document.getElementById('tts-input').value.trim();
+            if (v) speak(v);
+        }
+        document.getElementById('tts-input').addEventListener('keydown', function(e){ if(e.key==='Enter') speakTyped(); });
+
+        // ── Build objects row ─────────────────────────────────
+        function buildObjects() {
+            var row = document.getElementById('objects-row');
+            row.innerHTML = '';
+            for (var i = 0; i < NUMBER; i++) {
+                var span = document.createElement('span');
+                span.className = 'obj-item';
+                span.textContent = EMOJI;
+                span.id = 'obj-' + i;
+                row.appendChild(span);
+            }
+        }
+
+        // ── Counting animation ────────────────────────────────
+        function animateCount(onDone) {
+            var countEl = document.getElementById('count-display');
+            var i = 0;
+            // Reset all objects
+            for (var j = 0; j < NUMBER; j++) {
+                var el = document.getElementById('obj-' + j);
+                if (el) el.className = 'obj-item';
+            }
+            countEl.textContent = '';
+
+            function countOne() {
+                if (i >= NUMBER) {
+                    // Final: speak full count
+                    var nums = [];
+                    for (var k = 1; k <= NUMBER; k++) nums.push(k);
+                    speak(nums.join('... ') + '. ' + NUMBER + '!', onDone);
+                    return;
+                }
+                var el = document.getElementById('obj-' + i);
+                if (el) {
+                    el.className = 'obj-item lit';
+                    setTimeout(function(idx){ return function() {
+                        var e = document.getElementById('obj-' + idx);
+                        if (e) e.className = 'obj-item done';
+                    }; }(i), 400);
+                }
+                var nums = [];
+                for (var k = 0; k <= i; k++) nums.push(k+1);
+                countEl.textContent = nums.join(' · ');
+                speak(String(i+1), function() {
+                    i++;
+                    setTimeout(countOne, 200);
+                });
+            }
+            countOne();
+        }
+
+        // ── Full teaching sequence ────────────────────────────
+        function startTeaching() {
+            document.getElementById('phase-label').textContent = 'Step 1 — Watch & Listen';
+            document.getElementById('quiz-section').style.display = 'none';
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('big-number').classList.add('pop');
+            setTimeout(function(){ document.getElementById('big-number').classList.remove('pop'); }, 400);
+
+            speak('This is number ' + NUMBER + '.', function() {
+                setTimeout(function() {
+                    speak(NUMBER + '. ' + WORD + '.', function() {
+                        setTimeout(function() {
+                            document.getElementById('phase-label').textContent = 'Step 2 — Count with me!';
+                            speak('Let us count together.', function() {
+                                animateCount(function() {
+                                    setTimeout(function() {
+                                        document.getElementById('phase-label').textContent = 'Step 3 — Answer the question';
+                                        speak('Now answer the question below.', function() {
+                                            showQuiz();
+                                        });
+                                    }, 600);
+                                });
+                            });
+                        }, 600);
+                    });
+                }, 400);
+            });
+        }
+
+        // ── Quiz ──────────────────────────────────────────────
+        function showQuiz() {
+            attempts = 0;
+            document.getElementById('quiz-section').style.display = 'block';
+            document.getElementById('type-input').value = '';
+            document.getElementById('feedback').className = 'feedback';
+
+            // Show objects
+            var qo = document.getElementById('quiz-objects');
+            qo.innerHTML = '';
+            for (var i = 0; i < NUMBER; i++) {
+                var s = document.createElement('span');
+                s.textContent = EMOJI;
+                qo.appendChild(s);
+            }
+
+            document.getElementById('quiz-question').textContent =
+                'How many ' + EMOJI + ' do you see?';
+
+            // Build answer options: correct + 3 nearby
+            var opts = new Set([NUMBER]);
+            while (opts.size < Math.min(4, TOTAL)) {
+                var r = Math.floor(Math.random() * TOTAL) + 1;
+                opts.add(r);
+            }
+            var arr = Array.from(opts).sort(function(){ return Math.random()-0.5; });
+            var ao = document.getElementById('answer-opts');
+            ao.innerHTML = '';
+            arr.forEach(function(n) {
+                var btn = document.createElement('button');
+                btn.className = 'ans-btn';
+                btn.textContent = n;
+                btn.onclick = function() { selectAnswer(n, btn); };
+                ao.appendChild(btn);
+            });
+
+            document.getElementById('type-input').focus();
+        }
+
+        function selectAnswer(chosen, btn) {
+            var allBtns = document.querySelectorAll('.ans-btn');
+            allBtns.forEach(function(b){ b.disabled = true; });
+            giveFeedback(chosen === NUMBER, btn, chosen);
+        }
+
+        function checkTyped() {
+            var val = parseInt(document.getElementById('type-input').value);
+            if (isNaN(val)) return;
+            giveFeedback(val === NUMBER, null, val);
+        }
+        document.getElementById('type-input').addEventListener('keydown', function(e){ if(e.key==='Enter') checkTyped(); });
+
+        function giveFeedback(correct, btn, chosen) {
+            var fb     = document.getElementById('feedback');
+            var fbIcon = document.getElementById('fb-icon');
+            var fbText = document.getElementById('fb-text');
+            var fbSub  = document.getElementById('fb-sub');
+
+            if (correct) {
+                if (btn) btn.classList.add('correct');
+                fb.className = 'feedback correct show';
+                fbIcon.textContent = '✅';
+                fbText.textContent = 'Good job! Correct!';
+                fbSub.textContent  = 'There are ' + NUMBER + ' ' + EMOJI;
+                speak('Good job! Correct! There are ' + NUMBER + '. ' + WORD + '!');
+            } else {
+                attempts++;
+                if (btn) btn.classList.add('wrong');
+                // Highlight correct
+                document.querySelectorAll('.ans-btn').forEach(function(b){
+                    if (parseInt(b.textContent) === NUMBER) b.classList.add('correct');
+                });
+                fb.className = 'feedback wrong show';
+                fbIcon.textContent = '❌';
+                fbText.textContent = 'Try again!';
+                fbSub.textContent  = attempts >= 2 ? 'Hint: The answer is ' + NUMBER : 'Count the ' + EMOJI + ' carefully.';
+                speak(attempts >= 2 ? 'Not quite. The answer is ' + NUMBER + '.' : 'Try again! Count carefully.');
+                document.getElementById('type-input').value = '';
+            }
+        }
+
+        // ── Init ──────────────────────────────────────────────
+        buildObjects();
+        window.addEventListener('load', function() {
+            setTimeout(startTeaching, 700);
+        });
+    </script>
+</body>
+</html>

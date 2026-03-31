@@ -9,4 +9,5 @@ urlpatterns = [
     path('dashboard/deaf/', views.dashboard_deaf, name='dashboard_deaf'),
     path('dashboard/blind/', views.dashboard_blind, name='dashboard_blind'),
     path('dashboard/cognitive/', views.dashboard_cognitive, name='dashboard_cognitive'),
+    path('dashboard/dumb/', views.dashboard_dumb, name='dashboard_dumb'),
 ]

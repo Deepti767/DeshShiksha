@@ -56,9 +56,19 @@ def dashboard(request):
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     if not profile.disability:
         return redirect('profile_setup')
-    # dumb users go to cognitive dashboard for now
-    target = profile.disability if profile.disability != 'dumb' else 'cognitive'
-    return redirect(f'dashboard_{target}')
+    return redirect(f'dashboard_{profile.disability}')
+
+
+@login_required
+def dashboard_dumb(request):
+    from learning.data import ALPHABETS, NUMBERS
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    return render(request, 'users/dashboard_dumb.html', {
+        'progress': get_progress(request.user),
+        'profile':  profile,
+        'alphabets': ALPHABETS,
+        'numbers':   NUMBERS,
+    })
 
 
 # ── Per-disability dashboards ─────────────────────────────────
