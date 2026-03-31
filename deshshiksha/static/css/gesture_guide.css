@@ -1,0 +1,146 @@
+/* ── Floating Gesture Guide ─────────────────────────────────── */
+
+.gesture-guide-float {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 9999;
+    width: 200px;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 18px;
+    padding: 12px 14px 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.08);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    user-select: none;
+}
+
+.gesture-guide-float.collapsed {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+/* Header row */
+.gg-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.gg-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.5);
+}
+.gg-toggle {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.15s;
+}
+.gg-toggle:hover { color: white; }
+
+/* Gesture rows */
+.gg-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+    transition: background 0.2s;
+    cursor: default;
+}
+.gg-row:last-child { margin-bottom: 0; }
+.gg-row.active {
+    background: rgba(255,255,255,0.12);
+    animation: gg-highlight 0.4s ease;
+}
+@keyframes gg-highlight {
+    0%   { background: rgba(99,102,241,0.4); }
+    100% { background: rgba(255,255,255,0.12); }
+}
+
+.gg-icon {
+    font-size: 1.4rem;
+    width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+}
+.gg-info { flex: 1; }
+.gg-action {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1.2;
+}
+.gg-desc {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.45);
+    margin-top: 1px;
+}
+
+/* Divider */
+.gg-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 6px 0;
+}
+
+/* Detected badge */
+.gg-detected {
+    display: none;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 8px;
+    padding: 5px 8px;
+    margin-top: 8px;
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: white;
+    animation: gg-pop 0.25s ease;
+}
+.gg-detected.show { display: block; }
+@keyframes gg-pop {
+    from { transform: scale(0.85); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+
+/* Collapsed state — show only icon */
+.gesture-guide-float.collapsed .gg-header,
+.gesture-guide-float.collapsed .gg-row,
+.gesture-guide-float.collapsed .gg-divider,
+.gesture-guide-float.collapsed .gg-detected {
+    display: none;
+}
+.gg-collapsed-icon {
+    display: none;
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+.gesture-guide-float.collapsed .gg-collapsed-icon { display: flex; }
+
+/* Mobile */
+@media (max-width: 480px) {
+    .gesture-guide-float {
+        bottom: 16px;
+        left: 16px;
+        width: 180px;
+    }
+}

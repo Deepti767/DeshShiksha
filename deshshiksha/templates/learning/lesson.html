@@ -1,0 +1,309 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson - Deshshiksha</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', Arial, sans-serif; background: #f4f4f4; min-height: 100vh; }
+        {% if disability == 'deaf' %}
+        :root { --color: #2563eb; --bg: #dbeafe; --dark: #1d4ed8; }
+        {% elif disability == 'blind' %}
+        :root { --color: #7c3aed; --bg: #ede9fe; --dark: #6d28d9; }
+        {% else %}
+        :root { --color: #059669; --bg: #d1fae5; --dark: #047857; }
+        {% endif %}
+
+        header { background: var(--color); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        header a { color: white; text-decoration: none; font-size: 0.9rem; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 50px; }
+        .points-badge { background: rgba(255,255,255,0.2); padding: 4px 14px; border-radius: 50px; font-size: 0.85rem; }
+
+        .container { max-width: 660px; margin: 2rem auto; padding: 0 1rem 3rem; }
+
+        /* Progress */
+        .progress-info { display: flex; justify-content: space-between; font-size: 0.82rem; color: #888; margin-bottom: 6px; }
+        .progress-bar { background: #ddd; border-radius: 50px; height: 8px; margin-bottom: 1.5rem; overflow: hidden; }
+        .progress-bar-fill { background: linear-gradient(90deg, var(--color), var(--dark)); height: 8px; border-radius: 50px; transition: width 0.6s ease; }
+
+        /* Voice panel */
+        .vt-panel { background: white; border-radius: 16px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); padding: 1rem 1.4rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 1rem; }
+        .vt-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--color); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; color: white; }
+        .vt-avatar.speaking { animation: vt-speak 0.8s ease-in-out infinite alternate; }
+        .vt-avatar.listening { background: #ef4444; animation: vt-listen 0.6s ease-in-out infinite alternate; }
+        @keyframes vt-speak  { from{box-shadow:0 0 0 0 rgba(124,58,237,0.5)} to{box-shadow:0 0 0 14px rgba(124,58,237,0)} }
+        @keyframes vt-listen { from{box-shadow:0 0 0 0 rgba(239,68,68,0.5)}  to{box-shadow:0 0 0 14px rgba(239,68,68,0)}  }
+        .vt-body { flex: 1; }
+        .vt-phase { font-size: 0.72rem; color: var(--color); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+        #vt-status { font-size: 0.86rem; color: #444; line-height: 1.55; min-height: 2.6em; }
+        .vt-btn-row { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; }
+        .vt-btn { padding: 6px 16px; border: none; border-radius: 50px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: transform 0.15s, box-shadow 0.15s; }
+        .vt-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.12); }
+        .vt-btn-primary   { background: var(--color); color: white; }
+        .vt-btn-secondary { background: var(--bg); color: var(--color); }
+
+        /* Lesson card */
+        .card { background: white; border-radius: 20px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 2.5rem 2rem; text-align: center; }
+        .card .symbol { font-size: 5.5rem; line-height: 1; margin-bottom: 0.4rem; }
+        .card .label  { font-size: 3rem; font-weight: 800; color: var(--color); margin-bottom: 1.2rem; letter-spacing: -0.02em; }
+        .card .description { font-size: 1rem; color: #444; line-height: 1.75; background: var(--bg); padding: 1rem 1.2rem; border-radius: 12px; text-align: left; margin-bottom: 1.4rem; }
+
+        /* Braille grid */
+        .braille-section { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+        .braille-label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; }
+        .braille-grid { display: grid; grid-template-columns: repeat(2, 38px); grid-template-rows: repeat(3, 38px); gap: 10px; background: var(--bg); padding: 18px; border-radius: 14px; border: 2px solid var(--color); }
+        .dot { width: 38px; height: 38px; border-radius: 50%; background: #e5e7eb; border: 2px solid #d1d5db; transition: background 0.3s; }
+        .dot.active { background: var(--color); border-color: var(--dark); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .dot-pos-label { font-size: 0.65rem; color: #bbb; text-align: center; margin-top: 4px; }
+
+        /* Nav */
+        .nav { display: flex; justify-content: space-between; align-items: center; margin-top: 1.8rem; }
+        .btn { display: inline-block; padding: 11px 28px; background: var(--color); color: white; border: none; border-radius: 50px; font-size: 0.95rem; font-weight: 600; cursor: pointer; text-decoration: none; box-shadow: 0 4px 14px rgba(0,0,0,0.15); transition: background 0.2s, transform 0.15s; }
+        .btn:hover { background: var(--dark); transform: translateY(-1px); }
+        a.prev-link { display: inline-block; padding: 11px 28px; background: #f3f4f6; color: #555; border-radius: 50px; font-size: 0.95rem; text-decoration: none; font-weight: 500; }
+        a.prev-link:hover { background: #e5e7eb; }
+        .counter { color: #aaa; font-size: 0.88rem; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>{{ module|capfirst }} — Lesson {{ index|add:1 }}</h1>
+        <div style="display:flex;align-items:center;gap:1rem;">
+            {% if progress %}<span class="points-badge">⭐ {{ progress.points }} pts</span>{% endif %}
+            <a href="{{ back_url }}">← Overview</a>
+        </div>
+    </header>
+
+    <div class="container">
+
+        {% if disability == 'blind' %}
+        <div class="vt-panel" role="region" aria-label="Voice Teacher">
+            <div class="vt-avatar" id="vt-avatar">T</div>
+            <div class="vt-body">
+                <div class="vt-phase" id="vt-phase">Getting ready...</div>
+                <div id="vt-status" aria-live="polite">Loading lesson...</div>
+                <div class="vt-btn-row">
+                    <button class="vt-btn vt-btn-primary"   onclick="vtPhase1()">🔄 Teach Again</button>
+                    <button class="vt-btn vt-btn-secondary" onclick="VoiceTeacher.repeatLast()">🔁 Repeat</button>
+                    <button class="vt-btn vt-btn-secondary" onclick="vtPhase3()">🎤 My Turn</button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="progress-info">
+            <span>Lesson {{ index|add:1 }} of {{ total }}</span>
+            <span>+10 pts per lesson</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-bar-fill" style="width:{% widthratio index|add:1 total 100 %}%"></div>
+        </div>
+
+        <div class="card">
+            {% if module == 'alphabets' %}
+                <div class="symbol">{{ item.emoji }}</div>
+                <div class="label" id="lesson-label">{{ item.letter }}</div>
+            {% else %}
+                <div class="symbol">{{ item.emoji }}</div>
+                <div class="label" id="lesson-label">{{ item.number }}</div>
+            {% endif %}
+            <div class="description" id="lesson-content">{{ content }}</div>
+
+            {% if disability == 'blind' %}
+            <div class="braille-section">
+                <div class="braille-label">Braille dot pattern</div>
+                <div class="braille-grid" id="braille-grid" aria-label="Braille dot grid"></div>
+                <div class="dot-pos-label">Left col: 1–2–3 &nbsp;|&nbsp; Right col: 4–5–6</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="nav">
+            {% if prev_index is not None %}
+                <a class="prev-link" href="/learning/{{ disability }}/{{ module }}/lesson/{{ prev_index }}/">← Previous</a>
+            {% else %}
+                <span></span>
+            {% endif %}
+            <span class="counter">{{ index|add:1 }} / {{ total }}</span>
+            <form method="post" style="display:inline;" id="next-form">
+                {% csrf_token %}
+                {% if next_index is not None %}
+                    <button class="btn" type="submit">Next → (+10 pts)</button>
+                {% else %}
+                    <button class="btn" type="submit">Finish ✓ (+10 pts)</button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    {% if disability == 'blind' %}
+    <script src="{% static 'js/voice_teacher.js' %}"></script>
+    <script>
+        // ── Data ──────────────────────────────────────────────
+        var LABEL        = document.getElementById('lesson-label').textContent.trim();
+        var MODULE_TYPE  = '{{ module }}';
+        var HAS_NEXT     = {% if next_index is not None %}true{% else %}false{% endif %};
+        var BRAILLE_DOTS = {{ braille_dots_json }};
+        var WORD         = '{{ lesson_word }}';
+
+        // ── Braille grid ──────────────────────────────────────
+        var DOT_ORDER = [1,4,2,5,3,6];
+        function renderBrailleGrid() {
+            var grid = document.getElementById('braille-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            DOT_ORDER.forEach(function(pos) {
+                var d = document.createElement('div');
+                d.className = 'dot' + (BRAILLE_DOTS.indexOf(pos) >= 0 ? ' active' : '');
+                d.setAttribute('aria-label', 'dot ' + pos + (BRAILLE_DOTS.indexOf(pos) >= 0 ? ' filled' : ' empty'));
+                grid.appendChild(d);
+            });
+        }
+
+        function setPhase(s) { var e=document.getElementById('vt-phase'); if(e) e.textContent=s; }
+
+        // ── Speech builders ───────────────────────────────────
+        function getWordSpeech()  {
+            return MODULE_TYPE === 'alphabets'
+                ? LABEL + ' ... for ... ' + WORD + '.    ' + LABEL + '.'
+                : 'Number ... ' + LABEL + '.    ' + LABEL + '.';
+        }
+        function getDotSpeech() {
+            var count = BRAILLE_DOTS.length;
+            var list  = BRAILLE_DOTS.join(' ... ');
+            return 'The Braille pattern for ' + LABEL + ' has ' + count +
+                   (count===1?' dot':' dots') + ' at position' + (count===1?'':'s') + ' ... ' + list + '.';
+        }
+
+        // ── Teaching phases ───────────────────────────────────
+        function vtPhase1() {
+            setPhase('Teaching — Round 1 of 2');
+            VoiceTeacher.setContext('lesson');
+            // Step-by-step: word first, then dots, with pauses
+            VoiceTeacher.speakSteps([
+                getWordSpeech(),
+                getDotSpeech()
+            ], 1800, function() {
+                setTimeout(vtPhase2, 2200);
+            });
+        }
+
+        function vtPhase2() {
+            setPhase('Teaching — Round 2 of 2');
+            VoiceTeacher.speakSteps([
+                'Let me say that one more time.',
+                getWordSpeech(),
+                getDotSpeech()
+            ], 1600, function() {
+                setTimeout(vtPhase3, 2000);
+            });
+        }
+
+        function vtPhase3() {
+            setPhase('Your turn — say it out loud!');
+            var ask = MODULE_TYPE === 'alphabets'
+                ? 'Now your turn!    Which letter is this?    Please say it out loud.'
+                : 'Now your turn!    Which number is this?    Please say it out loud.';
+            VoiceTeacher.speak(ask);
+            // mic is already running — picks up answer automatically
+        }
+
+        // ── Answer checker ────────────────────────────────────
+        function checkAnswer(said) {
+            var expected = LABEL.toLowerCase();
+            var correct  = said === expected ||
+                           said.indexOf(expected) >= 0 ||
+                           (MODULE_TYPE === 'alphabets' && said.charAt(0) === expected);
+            if (correct) {
+                setPhase('Correct!');
+                VoiceTeacher.speakSteps([
+                    VoiceTeacher.praise() + '    That is correct!    The answer is ' + LABEL + '.',
+                    HAS_NEXT
+                        ? 'Say yes to continue to the next lesson, or repeat to hear again.'
+                        : 'You have finished this module!    Say yes to go back, or repeat to hear again.'
+                ], 800);
+            } else {
+                setPhase('Try again...');
+                VoiceTeacher.speakSteps([
+                    'Not quite.    You said ' + (said || 'nothing') + '.    The answer is ' + LABEL + '.',
+                    'Let me teach you again.'
+                ], 800, function() {
+                    setTimeout(vtPhase1, 1200);
+                });
+            }
+        }
+
+        // ── Continuous mic with smart command handling ────────
+        VoiceTeacher.listen(function(cmd, transcript) {
+            var ctx = VoiceTeacher.getContext();
+
+            // Barge-in navigation — always works
+            if (cmd === 'close') {
+                VoiceTeacher.speak('Going back to the overview.', function() {
+                    window.location.href = '{{ back_url }}';
+                });
+                return;
+            }
+            if (cmd === 'nav:chatbot')   { VoiceTeacher.speak('Opening chatbot.', function(){ window.location.href='/chatbot/'; }); return; }
+            if (cmd === 'nav:quiz')      { VoiceTeacher.speak('Opening quiz.', function(){ window.location.href='/learning/blind/quiz/'; }); return; }
+            if (cmd === 'nav:dashboard') { VoiceTeacher.speak('Going to dashboard.', function(){ window.location.href='/users/dashboard/'; }); return; }
+
+            // Repeat
+            if (cmd === 'repeat') { VoiceTeacher.repeatLast(); return; }
+
+            // Help
+            if (cmd === 'help') { VoiceTeacher.helpMessage(); return; }
+
+            // Explain / don't understand
+            if (cmd === 'explain') {
+                setPhase('Explaining again...');
+                VoiceTeacher.speakSteps([
+                    'No problem!    Let me explain more simply.',
+                    getWordSpeech(),
+                    getDotSpeech(),
+                    'Take your time.    Say repeat anytime to hear again.'
+                ], 1400);
+                return;
+            }
+
+            // Yes / continue
+            if (cmd === 'yes') {
+                if (ctx === 'lesson') {
+                    VoiceTeacher.speak(VoiceTeacher.praise() + '    Moving on!', function() {
+                        document.getElementById('next-form').submit();
+                    });
+                } else {
+                    vtPhase1();
+                }
+                return;
+            }
+
+            // No / wait
+            if (cmd === 'no') {
+                VoiceTeacher.speak('Okay!    Take your time.    Say repeat to hear the lesson again, or yes when you are ready.');
+                setPhase('Waiting...');
+                return;
+            }
+
+            // Unknown — treat as answer attempt if we are in lesson phase
+            if (ctx === 'lesson' && transcript && transcript.length <= 10) {
+                checkAnswer(transcript.toLowerCase().trim());
+            } else {
+                VoiceTeacher.fallback();
+            }
+        });
+
+        // ── Init ──────────────────────────────────────────────
+        window.addEventListener('load', function() {
+            renderBrailleGrid();
+            setTimeout(vtPhase1, 900);
+        });
+    </script>
+    {% endif %}
+</body>
+</html>
+
+
+
+

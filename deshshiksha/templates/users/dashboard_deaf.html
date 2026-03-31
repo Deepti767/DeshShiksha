@@ -1,0 +1,264 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deaf Dashboard - Deshshiksha</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="/static/css/i18n.css">
+    <script src="/static/js/i18n.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <style>
+        .welcome-hero { background: linear-gradient(135deg,#1e40af,#3b82f6,#06b6d4); }
+
+        .visual-tip { background: linear-gradient(135deg,#fef3c7,#fde68a); border: 2px solid #f59e0b; border-radius: 16px; padding: 1rem 1.4rem; margin-bottom: 1.8rem; display: flex; align-items: center; gap: 1rem; font-size: 0.92rem; color: #78350f; }
+        .visual-tip .tip-icon { font-size: 2rem; flex-shrink: 0; }
+
+        /* Gesture panel */
+        .gesture-panel { background: white; border-radius: 20px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 1.2rem 1.4rem; margin-bottom: 1.8rem; display: flex; gap: 1.4rem; align-items: flex-start; flex-wrap: wrap; }
+        .camera-wrap { position: relative; border-radius: 14px; overflow: hidden; flex-shrink: 0; background: #0f172a; width: 240px; height: 180px; }
+        .camera-wrap video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block; }
+        .cam-badge { position: absolute; top: 8px; left: 8px; background: #ef4444; color: white; font-size: 0.65rem; font-weight: 700; padding: 3px 8px; border-radius: 50px; }
+        .cam-badge.active { background: #22c55e; }
+        .gesture-info { flex: 1; min-width: 200px; }
+        .gesture-info h3 { font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.6rem; }
+        #gesture-box { border: 2px solid #e2e8f0; border-radius: 12px; padding: 0.8rem 1rem; background: white; margin-bottom: 0.8rem; transition: border-color 0.2s, background 0.2s; }
+        #gesture-label { font-size: 1rem; font-weight: 700; color: #94a3b8; transition: color 0.2s; }
+        .hold-track { background: #f1f5f9; border-radius: 50px; height: 8px; overflow: hidden; margin-bottom: 0.8rem; }
+        #gesture-hold-bar { height: 8px; border-radius: 50px; width: 0%; transition: width 0.1s, background 0.2s; }
+        .gesture-guide { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.8rem; }
+        .gesture-guide .g-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: #64748b; }
+        .gesture-guide .g-row .g-icon { font-size: 1.1rem; width: 24px; text-align: center; }
+        .cam-toggle { background: #2563eb; border: none; border-radius: 50px; padding: 10px 22px; font-size: 0.88rem; font-weight: 700; cursor: pointer; color: white; font-family: inherit; transition: background 0.15s, transform 0.15s; box-shadow: 0 4px 14px rgba(37,99,235,0.3); }
+        .cam-toggle:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .cam-toggle.on { background: #dcfce7; color: #15803d; box-shadow: none; }
+
+        /* Alpha strip */
+        .alpha-strip { background: white; border-radius: 16px; padding: 1.2rem 1.4rem; margin-bottom: 1.8rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .alpha-strip h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #999; margin-bottom: 0.9rem; }
+        .alpha-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .alpha-chip { background: linear-gradient(135deg,#dbeafe,#bfdbfe); border-radius: 10px; width: 52px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.15s, box-shadow 0.15s; border: 2px solid transparent; }
+        .alpha-chip:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(37,99,235,0.2); border-color: #3b82f6; }
+        .alpha-chip .ch-letter { font-size: 1.2rem; font-weight: 800; color: #1d4ed8; line-height: 1; }
+        .alpha-chip .ch-emoji  { font-size: 0.9rem; }
+
+        /* Challenge */
+        .challenge-card { background: linear-gradient(135deg,#f0fdf4,#dcfce7); border: 2px solid #86efac; border-radius: 16px; padding: 1.2rem 1.6rem; margin-bottom: 1.8rem; display: flex; align-items: center; gap: 1.2rem; }
+        .challenge-icon { font-size: 2.4rem; flex-shrink: 0; }
+        .challenge-info h4 { color: #15803d; font-size: 1rem; margin-bottom: 3px; }
+        .challenge-info p  { color: #166534; font-size: 0.84rem; }
+        .challenge-btn { margin-left: auto; background: #16a34a; color: white; padding: 8px 20px; border-radius: 50px; text-decoration: none; font-size: 0.85rem; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+        .challenge-btn:hover { background: #15803d; }
+
+        .modules { grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); }
+        .module-card { padding: 2rem 1.2rem 1.6rem; }
+        .module-card .mod-icon { width: 70px; height: 70px; font-size: 2.2rem; border-radius: 20px; }
+
+        @media (max-width: 600px) { .camera-wrap { width: 100%; height: 200px; } }
+    </style>
+</head>
+<body class="theme-deaf">
+
+    <nav class="navbar">
+        <a class="navbar-brand" href="/"><span class="logo-icon">🎓</span><span class="logo-text">Deshshiksha</span></a>
+        <div class="navbar-right">
+            <span class="navbar-user">Hello, <span>{% if profile and profile.full_name %}{{ profile.full_name|truncatechars:14 }}{% else %}{{ request.user.username }}{% endif %}</span></span>
+            <a class="logout-btn" href="/users/logout/">Logout</a>
+        </div>
+    </nav>
+    <div class="navbar-lang-row">
+        <span class="lang-label">🌐 Language:</span>
+        <div id="lang-switcher-bar"></div>
+    </div>
+
+    <div class="page">
+
+        <!-- Welcome -->
+        <div class="welcome-hero">
+            <h2>Welcome back, {% if profile and profile.full_name %}{{ profile.full_name|truncatechars:20 }}{% else %}{{ request.user.username }}{% endif %} 👋</h2>
+            <p>Your visual sign language learning space.</p>
+            <div class="pts-pill">⭐ {{ progress.points }} points earned</div>
+        </div>
+
+        <!-- Visual tip -->
+        <div class="visual-tip">
+            <div class="tip-icon">👁️</div>
+            <div>Everything here is <strong>100% visual</strong> — no audio needed. Use hand gestures or tap the cards to navigate!</div>
+        </div>
+
+        <!-- Gesture Camera Panel -->
+        <div class="gesture-panel">
+            <div class="camera-wrap">
+                <video id="gesture-video" autoplay playsinline muted></video>
+                <div class="cam-badge" id="cam-badge">● OFF</div>
+            </div>
+            <div class="gesture-info">
+                <h3>👋 Hand Gesture Control</h3>
+                <div id="gesture-box">
+                    <div id="gesture-label">🤚 Show a hand sign to navigate</div>
+                </div>
+                <div class="hold-track"><div id="gesture-hold-bar"></div></div>
+                <div class="gesture-guide">
+                    <div class="g-row"><span class="g-icon">☝️</span><span>→ 1 finger = Lessons</span></div>
+                    <div class="g-row"><span class="g-icon">✌️</span><span>→ 2 fingers = Quiz</span></div>
+                    <div class="g-row"><span class="g-icon">🤟</span><span>→ 3 fingers = Chatbot</span></div>
+                    <div class="g-row"><span class="g-icon">🖐</span><span>→ 4 fingers = Numbers</span></div>
+                    <div class="g-row"><span class="g-icon">👍</span><span>→ Thumbs up = Alphabets</span></div>
+                    <div class="g-row"><span class="g-icon">✊</span><span>→ Fist = Dashboard</span></div>
+                </div>
+                <button class="cam-toggle" id="cam-toggle" onclick="toggleCamera()">📷 Start Camera — Click to Enable</button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-value">{{ progress.points }}</div><div class="stat-label" data-i18n="total_points">Total Points</div></div>
+            <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-value">{{ progress.lessons_completed }}</div><div class="stat-label" data-i18n="lessons_done">Lessons Done</div></div>
+            <div class="stat-card">
+                <div class="stat-icon">{% if progress.points >= 200 %}��{% elif progress.points >= 100 %}🥈{% elif progress.points >= 50 %}🥉{% else %}🔰{% endif %}</div>
+                <div class="stat-value" style="font-size:1.1rem;">{% if progress.points >= 200 %}Expert{% elif progress.points >= 100 %}Inter.{% elif progress.points >= 50 %}Beginner{% else %}Starter{% endif %}</div>
+                <div class="stat-label" data-i18n="badge">Badge</div>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-card">
+            <div class="prog-header"><span class="prog-title" data-i18n="overall_progress">Overall Progress</span><span class="prog-count">{{ progress.lessons_completed }} / 36 lessons</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:{% widthratio progress.lessons_completed 36 100 %}%"></div></div>
+        </div>
+
+        <!-- Alphabet strip -->
+        <div class="alpha-strip">
+            <h3>Quick Alphabet Preview — tap any letter to learn</h3>
+            <div class="alpha-row">
+                {% for item in lessons %}
+                <a class="alpha-chip" href="/learning/deaf/alphabets/lesson/{{ forloop.counter0 }}/">
+                    <span class="ch-letter">{{ item.letter }}</span>
+                    <span class="ch-emoji">{{ item.emoji }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Challenge -->
+        <div class="challenge-card">
+            <div class="challenge-icon">🏆</div>
+            <div class="challenge-info"><h4>Today's Challenge</h4><p>Complete 3 lessons to earn a bonus badge!</p></div>
+            <a class="challenge-btn" href="/learning/deaf/alphabets/">Start →</a>
+        </div>
+
+        <!-- Badge -->
+        <div class="badge-card">
+            {% if progress.points >= 200 %}<div class="badge-emoji">🥇</div><div class="badge-info"><div class="badge-title">Expert Badge</div><div class="badge-sub">200+ points — Outstanding!</div></div>
+            {% elif progress.points >= 100 %}<div class="badge-emoji">🥈</div><div class="badge-info"><div class="badge-title">Intermediate Badge</div><div class="badge-sub">100+ points — Keep it up!</div></div>
+            {% elif progress.points >= 50 %}<div class="badge-emoji">🥉</div><div class="badge-info"><div class="badge-title">Beginner Badge</div><div class="badge-sub">50+ points — Great start!</div></div>
+            {% else %}<div class="badge-emoji">🔰</div><div class="badge-info"><div class="badge-title">No Badge Yet</div><div class="badge-sub">Earn 50 points to unlock your first badge!</div></div>
+            {% endif %}
+        </div>
+
+        <!-- Modules -->
+        <div class="section-heading" data-i18n="learning_modules">Learning Modules</div>
+        <div class="modules">
+            <div class="module-card"><div class="mod-icon">🤟</div><h3 data-i18n="alphabets">Alphabets</h3><p>Learn sign language A–Z</p><a class="go-btn" href="/learning/deaf/alphabets/" data-i18n="start">Start →</a></div>
+            <div class="module-card"><div class="mod-icon">🔢</div><h3 data-i18n="numbers">Numbers</h3><p>Learn numbers 1–10 visually</p><a class="go-btn" href="/learning/deaf/numbers/">Start →</a></div>
+            <div class="module-card"><div class="mod-icon">🎯</div><h3>Visual Quiz</h3><p>Match letters to images</p><a class="go-btn" href="/learning/deaf/quiz/">Take Quiz →</a></div>
+            <div class="module-card"><div class="mod-icon">🤖</div><h3 data-i18n="ask_assistant">Ask Assistant</h3><p>Chat with your learning bot</p><a class="go-btn" href="/chatbot/">Open Chat →</a></div>
+            <div class="module-card"><div class="mod-icon">🤟</div><h3 data-i18n="sign_practice">Sign Practice</h3><p>Practice signs with your camera</p><a class="go-btn" href="/learning/deaf/practice/">Practice →</a></div>
+        </div>
+
+    </div>
+
+    <script src="{% static 'js/gesture.js' %}"></script>
+    <script>
+        var camOn = false;
+
+        function toggleCamera() {
+            if (camOn) {
+                GestureController.stop();
+                camOn = false;
+                document.getElementById('cam-badge').textContent  = '● OFF';
+                document.getElementById('cam-badge').className    = 'cam-badge';
+                document.getElementById('cam-toggle').textContent = '📷 Start Camera — Click to Enable';
+                document.getElementById('cam-toggle').className   = 'cam-toggle';
+                document.getElementById('gesture-label').textContent = '🤚 Camera is off';
+            } else {
+                startGestureCamera();
+            }
+        }
+
+        function startGestureCamera() {
+            var label  = document.getElementById('gesture-label');
+            var badge  = document.getElementById('cam-badge');
+            var toggle = document.getElementById('cam-toggle');
+
+            label.textContent  = '⏳ Starting camera...';
+            label.style.color  = '#f59e0b';
+            toggle.textContent = '⏳ Loading...';
+            toggle.disabled    = true;
+
+            var video = document.getElementById('gesture-video');
+
+            // First get user media permission explicitly
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    // Stop the test stream — MediaPipe Camera will manage it
+                    stream.getTracks().forEach(function(t) { t.stop(); });
+
+                    return GestureController.start(video, function(gesture) {
+                        handleGesture(gesture);
+                    });
+                })
+                .then(function() {
+                    camOn = true;
+                    badge.textContent  = '● LIVE';
+                    badge.className    = 'cam-badge active';
+                    toggle.textContent = '📷 Camera ON — Click to Stop';
+                    toggle.className   = 'cam-toggle on';
+                    toggle.disabled    = false;
+                    label.textContent  = '🤚 Show a hand sign to navigate';
+                    label.style.color  = '#94a3b8';
+                })
+                .catch(function(err) {
+                    toggle.disabled    = false;
+                    toggle.textContent = '📷 Start Camera — Click to Enable';
+                    var msg = err.name === 'NotAllowedError'
+                        ? '🚫 Camera permission denied. Please allow camera access.'
+                        : '⚠️ Camera error: ' + (err.message || err);
+                    label.textContent = msg;
+                    label.style.color = '#ef4444';
+                });
+        }
+
+        // Init floating guide
+        window.addEventListener('load', function() { GestureGuide.init(); });
+
+        function handleGesture(gesture) {
+            var ROUTES = {
+                '1_finger':  '/learning/deaf/alphabets/',
+                '2_fingers': '/learning/deaf/quiz/',
+                '3_fingers': '/chatbot/',
+                '4_fingers': '/learning/deaf/numbers/',
+                '5_fingers': '/learning/deaf/alphabets/',
+                'thumbs_up': '/learning/deaf/alphabets/',
+                'fist':      '/users/dashboard/',
+            };
+            var url = ROUTES[gesture];
+            if (url) {
+                var box = document.getElementById('gesture-box');
+                box.style.background  = '#dcfce7';
+                box.style.borderColor = '#22c55e';
+                document.getElementById('gesture-label').textContent = '✅ Navigating...';
+                setTimeout(function() { window.location.href = url; }, 700);
+            }
+        }
+    </script>
+    <script>I18n.buildSwitcher('lang-switcher-bar');</script>
+</body>
+</html>
+
+
+
+
+

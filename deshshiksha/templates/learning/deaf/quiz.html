@@ -1,0 +1,341 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Quiz - Deaf</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', Arial, sans-serif; background: #f0f6ff; min-height: 100vh; }
+        header { background: linear-gradient(135deg,#1e40af,#3b82f6); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+        header h1 { font-size: 1.2rem; font-weight: 700; }
+        header a { color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 7px 16px; border-radius: 50px; font-size: 0.85rem; }
+        .page { max-width: 680px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+        /* Progress bar */
+        .q-progress { display: flex; justify-content: space-between; font-size: 0.82rem; color: #64748b; margin-bottom: 6px; font-weight: 600; }
+        .prog-track { background: #dbeafe; border-radius: 50px; height: 10px; margin-bottom: 2rem; overflow: hidden; }
+        .prog-fill { background: linear-gradient(90deg,#2563eb,#06b6d4); height: 10px; border-radius: 50px; transition: width 0.5s ease; }
+
+        /* Question card */
+        .q-card { background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 2rem; margin-bottom: 1.5rem; text-align: center; }
+        .q-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #94a3b8; margin-bottom: 0.8rem; }
+        .q-emoji { font-size: 5rem; line-height: 1; margin-bottom: 0.5rem; }
+        .q-text  { font-size: 1.15rem; font-weight: 700; color: #1e293b; margin-bottom: 0.3rem; }
+        .q-sub   { font-size: 0.88rem; color: #64748b; }
+
+        /* Options grid */
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; margin-bottom: 1.5rem; }
+        .opt-btn {
+            background: white;
+            border: 3px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 1.2rem 0.8rem;
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            transition: transform 0.15s, border-color 0.15s, background 0.15s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .opt-btn:hover:not(:disabled) { transform: translateY(-3px); border-color: #3b82f6; box-shadow: 0 6px 20px rgba(37,99,235,0.15); }
+        .opt-btn .opt-emoji  { font-size: 2.4rem; }
+        .opt-btn .opt-letter { font-size: 1.6rem; font-weight: 900; color: #1d4ed8; }
+        .opt-btn .opt-word   { font-size: 0.78rem; color: #64748b; font-weight: 600; }
+
+        /* Feedback states */
+        .opt-btn.correct  { border-color: #22c55e; background: #f0fdf4; animation: pop 0.3s ease; }
+        .opt-btn.wrong    { border-color: #ef4444; background: #fff1f2; animation: shake 0.4s ease; }
+        .opt-btn.correct .opt-letter { color: #16a34a; }
+        .opt-btn.wrong   .opt-letter { color: #dc2626; }
+        @keyframes pop   { 0%{transform:scale(1)} 50%{transform:scale(1.08)} 100%{transform:scale(1)} }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+        /* Feedback banner */
+        .feedback-banner {
+            border-radius: 14px;
+            padding: 1rem 1.4rem;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            display: none;
+            animation: slide-in 0.25s ease;
+        }
+        .feedback-banner.show { display: block; }
+        .feedback-banner.correct { background: #dcfce7; color: #15803d; border: 2px solid #86efac; }
+        .feedback-banner.wrong   { background: #fee2e2; color: #b91c1c; border: 2px solid #fca5a5; }
+        @keyframes slide-in { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+
+        /* Next button */
+        .next-btn {
+            display: none;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg,#2563eb,#1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+            transition: transform 0.15s;
+            font-family: inherit;
+        }
+        .next-btn.show { display: block; }
+        .next-btn:hover { transform: translateY(-2px); }
+
+        /* Score card */
+        .score-card { background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 2.5rem 2rem; text-align: center; display: none; }
+        .score-card.show { display: block; }
+        .score-trophy { font-size: 4rem; margin-bottom: 0.5rem; }
+        .score-card h2 { font-size: 1.6rem; font-weight: 800; color: #1e293b; margin-bottom: 0.4rem; }
+        .score-num { font-size: 3.5rem; font-weight: 900; color: #2563eb; margin: 0.8rem 0; }
+        .score-msg { font-size: 1rem; color: #64748b; margin-bottom: 1.8rem; }
+        .score-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .score-actions a, .score-actions button {
+            padding: 11px 28px; border-radius: 50px; font-size: 0.92rem; font-weight: 600;
+            text-decoration: none; cursor: pointer; font-family: inherit; border: none;
+        }
+        .btn-primary { background: #2563eb; color: white; box-shadow: 0 4px 14px rgba(37,99,235,0.3); }
+        .btn-secondary { background: #f1f5f9; color: #334155; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🎯 Visual Quiz</h1>
+        <a href="/users/dashboard/">← Dashboard</a>
+    </header>
+
+    <div class="page">
+        <div class="q-progress">
+            <span id="q-counter">Question 1 of 5</span>
+            <span id="q-score-live">Score: 0</span>
+        </div>
+        <div class="prog-track">
+            <div class="prog-fill" id="prog-fill" style="width:0%"></div>
+        </div>
+
+        <!-- Question -->
+        <div class="q-card" id="q-card">
+            <div class="q-label" id="q-label">Which image matches this letter?</div>
+            <div class="q-emoji" id="q-emoji"></div>
+            <div class="q-text"  id="q-text"></div>
+            <div class="q-sub"   id="q-sub">Tap the correct image below</div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="feedback-banner" id="feedback"></div>
+
+        <!-- Options -->
+        <div class="options" id="options"></div>
+
+        <!-- Next -->
+        <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next Question →</button>
+
+        <!-- Score -->
+        <div class="score-card" id="score-card">
+            <div class="score-trophy" id="score-trophy">🏆</div>
+            <h2>Quiz Complete!</h2>
+            <div class="score-num" id="score-num">0/5</div>
+            <div class="score-msg" id="score-msg"></div>
+            <div class="score-actions">
+                <button class="btn-secondary" onclick="restartQuiz()">🔄 Try Again</button>
+                <a class="btn-primary" href="/users/dashboard/">🏠 Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Quiz data — letter matching ───────────────────────
+        var ALL_ITEMS = [
+            {letter:'A', emoji:'🍎', word:'Apple'},
+            {letter:'B', emoji:'🐝', word:'Bee'},
+            {letter:'C', emoji:'🐱', word:'Cat'},
+            {letter:'D', emoji:'🐶', word:'Dog'},
+            {letter:'E', emoji:'🐘', word:'Elephant'},
+            {letter:'F', emoji:'🐸', word:'Frog'},
+            {letter:'G', emoji:'🍇', word:'Grapes'},
+            {letter:'H', emoji:'🏠', word:'House'},
+            {letter:'I', emoji:'🍦', word:'Ice Cream'},
+            {letter:'J', emoji:'🎃', word:'Jug'},
+            {letter:'K', emoji:'🪁', word:'Kite'},
+            {letter:'L', emoji:'��', word:'Lion'},
+            {letter:'M', emoji:'🌙', word:'Moon'},
+            {letter:'N', emoji:'🌰', word:'Nut'},
+            {letter:'O', emoji:'🍊', word:'Orange'},
+            {letter:'P', emoji:'🐧', word:'Penguin'},
+            {letter:'Q', emoji:'👸', word:'Queen'},
+            {letter:'R', emoji:'🌈', word:'Rainbow'},
+            {letter:'S', emoji:'⭐', word:'Star'},
+            {letter:'T', emoji:'🐯', word:'Tiger'},
+            {letter:'U', emoji:'☂️', word:'Umbrella'},
+            {letter:'V', emoji:'🎻', word:'Violin'},
+            {letter:'W', emoji:'🐋', word:'Whale'},
+            {letter:'X', emoji:'🎸', word:'Xylophone'},
+            {letter:'Y', emoji:'🪀', word:'Yo-yo'},
+            {letter:'Z', emoji:'🦓', word:'Zebra'},
+        ];
+
+        var TOTAL_Q   = 5;
+        var questions = [];
+        var currentQ  = 0;
+        var score     = 0;
+        var answered  = false;
+
+        // ── Shuffle helper ────────────────────────────────────
+        function shuffle(arr) {
+            var a = arr.slice();
+            for (var i = a.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var t = a[i]; a[i] = a[j]; a[j] = t;
+            }
+            return a;
+        }
+
+        // ── Build quiz questions ──────────────────────────────
+        function buildQuiz() {
+            var pool = shuffle(ALL_ITEMS).slice(0, TOTAL_Q);
+            questions = pool.map(function(correct) {
+                // Pick 3 wrong options
+                var others = shuffle(ALL_ITEMS.filter(function(x){ return x.letter !== correct.letter; })).slice(0, 3);
+                var opts   = shuffle([correct].concat(others));
+                return { correct: correct, options: opts };
+            });
+        }
+
+        // ── Render question ───────────────────────────────────
+        function renderQuestion() {
+            answered = false;
+            var q = questions[currentQ];
+
+            document.getElementById('q-counter').textContent = 'Question ' + (currentQ+1) + ' of ' + TOTAL_Q;
+            document.getElementById('q-score-live').textContent = 'Score: ' + score;
+            document.getElementById('prog-fill').style.width = (currentQ / TOTAL_Q * 100) + '%';
+
+            // Question: show the LETTER, ask to match the image
+            document.getElementById('q-label').textContent = 'Which image matches this letter?';
+            document.getElementById('q-emoji').textContent = q.correct.letter;
+            document.getElementById('q-emoji').style.fontSize = '5rem';
+            document.getElementById('q-text').textContent  = 'Letter ' + q.correct.letter;
+            document.getElementById('q-sub').textContent   = 'Tap the correct picture below 👇';
+
+            // Feedback reset
+            var fb = document.getElementById('feedback');
+            fb.className = 'feedback-banner';
+            fb.textContent = '';
+
+            // Next btn
+            document.getElementById('next-btn').className = 'next-btn';
+
+            // Options
+            var optDiv = document.getElementById('options');
+            optDiv.innerHTML = '';
+            q.options.forEach(function(opt) {
+                var btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerHTML =
+                    '<span class="opt-emoji">'  + opt.emoji  + '</span>' +
+                    '<span class="opt-letter">' + opt.letter + '</span>' +
+                    '<span class="opt-word">'   + opt.word   + '</span>';
+                btn.onclick = function() { selectAnswer(opt, btn, q.correct); };
+                optDiv.appendChild(btn);
+            });
+        }
+
+        // ── Handle answer ─────────────────────────────────────
+        function selectAnswer(chosen, btn, correct) {
+            if (answered) return;
+            answered = true;
+
+            var allBtns = document.querySelectorAll('.opt-btn');
+            allBtns.forEach(function(b) { b.disabled = true; });
+
+            var fb = document.getElementById('feedback');
+
+            if (chosen.letter === correct.letter) {
+                score++;
+                btn.classList.add('correct');
+                fb.textContent = '✅ Correct! ' + correct.letter + ' is for ' + correct.word + '!';
+                fb.className = 'feedback-banner correct show';
+            } else {
+                btn.classList.add('wrong');
+                // Highlight correct answer
+                allBtns.forEach(function(b) {
+                    var ltr = b.querySelector('.opt-letter').textContent;
+                    if (ltr === correct.letter) b.classList.add('correct');
+                });
+                fb.textContent = '❌ Not quite! The answer was ' + correct.letter + ' for ' + correct.word + '.';
+                fb.className = 'feedback-banner wrong show';
+            }
+
+            document.getElementById('q-score-live').textContent = 'Score: ' + score;
+
+            // Show next button
+            var nextBtn = document.getElementById('next-btn');
+            nextBtn.textContent = currentQ < TOTAL_Q - 1 ? 'Next Question →' : 'See Results 🏆';
+            nextBtn.className = 'next-btn show';
+        }
+
+        // ── Next question ─────────────────────────────────────
+        function nextQuestion() {
+            currentQ++;
+            if (currentQ < TOTAL_Q) {
+                renderQuestion();
+            } else {
+                showScore();
+            }
+        }
+
+        // ── Show score ────────────────────────────────────────
+        function showScore() {
+            document.getElementById('q-card').style.display   = 'none';
+            document.getElementById('options').style.display  = 'none';
+            document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('prog-fill').style.width  = '100%';
+
+            var card = document.getElementById('score-card');
+            card.className = 'score-card show';
+
+            document.getElementById('score-num').textContent = score + ' / ' + TOTAL_Q;
+
+            var trophy, msg;
+            if (score === TOTAL_Q)      { trophy='🏆'; msg='Perfect score! You are amazing! 🌟'; }
+            else if (score >= TOTAL_Q-1){ trophy='��'; msg='Excellent work! Almost perfect!'; }
+            else if (score >= TOTAL_Q-2){ trophy='🥈'; msg='Great job! Keep practising!'; }
+            else                        { trophy='🥉'; msg='Good try! Review the lessons and try again.'; }
+
+            document.getElementById('score-trophy').textContent = trophy;
+            document.getElementById('score-msg').textContent    = msg;
+
+            // Submit to backend for points
+            fetch('/learning/deaf/quiz/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'csrfmiddlewaretoken={{ csrf_token }}'
+            }).catch(function(){});
+        }
+
+        // ── Restart ───────────────────────────────────────────
+        function restartQuiz() {
+            currentQ = 0; score = 0;
+            document.getElementById('q-card').style.display   = '';
+            document.getElementById('options').style.display  = '';
+            document.getElementById('feedback').style.display = '';
+            document.getElementById('score-card').className   = 'score-card';
+            buildQuiz();
+            renderQuestion();
+        }
+
+        // ── Init ──────────────────────────────────────────────
+        buildQuiz();
+        renderQuestion();
+    </script>
+</body>
+</html>
+

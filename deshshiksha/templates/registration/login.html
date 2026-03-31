@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Deshshiksha</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e40af 0%, #7c3aed 50%, #0891b2 100%);
+            display: flex; align-items: center; justify-content: center;
+            padding: 1rem;
+        }
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            width: 100%; max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .logo { text-align: center; margin-bottom: 1.8rem; }
+        .logo .logo-icon { font-size: 2.8rem; display: block; margin-bottom: 0.3rem; }
+        .logo h1 { font-size: 1.6rem; font-weight: 800; color: #1e293b; letter-spacing: -0.02em; }
+        .logo p  { font-size: 0.85rem; color: #94a3b8; margin-top: 3px; }
+
+        .form-group { margin-bottom: 1.1rem; }
+        label { display: block; font-size: 0.82rem; font-weight: 600; color: #475569; margin-bottom: 5px; }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 11px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            color: #1e293b;
+        }
+        input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+
+        .error-msg { background: #fee2e2; color: #b91c1c; border-radius: 10px; padding: 8px 12px; font-size: 0.82rem; margin-bottom: 1rem; font-weight: 500; }
+
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 16px rgba(99,102,241,0.35);
+            transition: transform 0.15s, box-shadow 0.15s;
+            margin-top: 0.4rem;
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,0.4); }
+
+        .divider { text-align: center; color: #cbd5e1; font-size: 0.82rem; margin: 1.2rem 0; position: relative; }
+        .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: #e2e8f0; }
+        .divider::before { left: 0; } .divider::after { right: 0; }
+
+        .link-row { text-align: center; font-size: 0.88rem; color: #64748b; }
+        .link-row a { color: #4f46e5; font-weight: 600; text-decoration: none; }
+        .link-row a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">
+            <span class="logo-icon">🎓</span>
+            <h1>Deshshiksha</h1>
+            <p>Inclusive learning for everyone</p>
+        </div>
+
+        {% if form.errors %}
+        <div class="error-msg">⚠️ Invalid username or password. Please try again.</div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_username">Username</label>
+                <input type="text" name="username" id="id_username" placeholder="Enter your username" autofocus>
+            </div>
+            <div class="form-group">
+                <label for="id_password">Password</label>
+                <input type="password" name="password" id="id_password" placeholder="Enter your password">
+            </div>
+            <button class="btn-login" type="submit">Login →</button>
+        </form>
+
+        <div class="divider">or</div>
+        <div class="link-row">
+            Don't have an account? <a href="/users/register/">Create one</a>
+        </div>
+    </div>
+</body>
+</html>

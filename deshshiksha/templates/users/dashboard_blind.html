@@ -1,0 +1,318 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Deshshiksha</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="/static/css/i18n.css">
+    <script src="/static/js/i18n.js"></script>
+    <style>
+        /* ── Floating Avatar ─────────────────────────────── */
+        .avatar-widget {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        /* Message bubble */
+        .avatar-bubble {
+            background: white;
+            border: 2px solid #ede9fe;
+            border-radius: 18px 18px 4px 18px;
+            padding: 10px 16px;
+            max-width: 240px;
+            font-size: 0.82rem;
+            color: #4c1d95;
+            line-height: 1.5;
+            box-shadow: 0 4px 20px rgba(124,58,237,0.15);
+            display: none;
+            animation: bubble-in 0.25s ease;
+        }
+        .avatar-bubble.visible { display: block; }
+        @keyframes bubble-in {
+            from { opacity: 0; transform: translateY(8px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Avatar circle */
+        .avatar-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4c1d95, #7c3aed);
+            box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.2s;
+        }
+        .avatar-circle:hover { transform: scale(1.06); }
+
+        /* Ripple rings when speaking */
+        .avatar-circle::before,
+        .avatar-circle::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(124,58,237,0.4);
+            width: 100%; height: 100%;
+            opacity: 0;
+        }
+        .avatar-circle.speaking::before {
+            animation: ring 1.4s ease-out infinite;
+        }
+        .avatar-circle.speaking::after {
+            animation: ring 1.4s ease-out 0.5s infinite;
+        }
+        @keyframes ring {
+            0%   { transform: scale(1);   opacity: 0.7; }
+            100% { transform: scale(1.9); opacity: 0; }
+        }
+
+        /* Glow when speaking */
+        .avatar-circle.speaking {
+            box-shadow: 0 0 0 0 rgba(124,58,237,0.5);
+            animation: glow-pulse 1s ease-in-out infinite alternate;
+        }
+        @keyframes glow-pulse {
+            from { box-shadow: 0 4px 20px rgba(124,58,237,0.35); }
+            to   { box-shadow: 0 4px 36px rgba(124,58,237,0.75), 0 0 0 8px rgba(124,58,237,0.1); }
+        }
+
+        /* Red ring when listening */
+        .avatar-circle.listening {
+            background: linear-gradient(135deg, #991b1b, #ef4444);
+            animation: listen-pulse 0.7s ease-in-out infinite alternate;
+        }
+        @keyframes listen-pulse {
+            from { box-shadow: 0 4px 20px rgba(239,68,68,0.35); }
+            to   { box-shadow: 0 4px 36px rgba(239,68,68,0.75), 0 0 0 8px rgba(239,68,68,0.1); }
+        }
+        .avatar-circle.listening::before {
+            animation: ring-red 1.2s ease-out infinite;
+            border-color: rgba(239,68,68,0.4);
+        }
+        @keyframes ring-red {
+            0%   { transform: scale(1);   opacity: 0.7; }
+            100% { transform: scale(1.9); opacity: 0; }
+        }
+
+        /* Mouth bar animation inside avatar */
+        .avatar-mouth {
+            display: flex;
+            gap: 3px;
+            align-items: flex-end;
+            height: 18px;
+            position: absolute;
+            bottom: 18px;
+        }
+        .avatar-mouth span {
+            width: 4px;
+            background: rgba(255,255,255,0.85);
+            border-radius: 2px;
+            height: 4px;
+            transition: height 0.1s;
+        }
+        .avatar-circle.speaking .avatar-mouth span:nth-child(1) { animation: bar 0.6s ease-in-out infinite alternate; }
+        .avatar-circle.speaking .avatar-mouth span:nth-child(2) { animation: bar 0.6s ease-in-out 0.1s infinite alternate; }
+        .avatar-circle.speaking .avatar-mouth span:nth-child(3) { animation: bar 0.6s ease-in-out 0.2s infinite alternate; }
+        .avatar-circle.speaking .avatar-mouth span:nth-child(4) { animation: bar 0.6s ease-in-out 0.15s infinite alternate; }
+        .avatar-circle.speaking .avatar-mouth span:nth-child(5) { animation: bar 0.6s ease-in-out 0.05s infinite alternate; }
+        @keyframes bar {
+            from { height: 3px; }
+            to   { height: 14px; }
+        }
+
+        /* Mobile */
+        @media (max-width: 600px) {
+            .avatar-widget { bottom: 16px; right: 16px; }
+            .avatar-circle { width: 64px; height: 64px; }
+            .avatar-bubble { max-width: 180px; font-size: 0.78rem; }
+        }
+    </style>
+</head>
+<body class="theme-blind">
+
+    <nav class="navbar">
+        <a class="navbar-brand" href="/">
+            <span class="logo-icon">🎓</span>
+            <span class="logo-text">Deshshiksha</span>
+        </a>
+        <div class="navbar-right">
+            <span class="navbar-user">Hello, <span>{% if profile and profile.full_name %}{{ profile.full_name|truncatechars:14 }}{% else %}{{ request.user.username }}{% endif %}</span></span>
+            <a class="logout-btn" href="/users/logout/">Logout</a>
+        </div>
+    </nav>
+    <div class="navbar-lang-row">
+        <span class="lang-label">🌐 Language:</span>
+        <div id="lang-switcher-bar"></div>
+    </div>
+
+    <div class="page">
+
+        <!-- Voice control panel -->
+        <div class="vt-panel" role="region" aria-label="Voice Teacher">
+            <div class="vt-avatar" id="vt-avatar">🧑‍🏫</div>
+            <div class="vt-info">
+                <h3>Voice Teacher — Always Listening</h3>
+                <div id="vt-status" aria-live="polite">Loading...</div>
+                <div class="vt-btn-row">
+                    <button class="vt-btn vt-btn-primary"   onclick="startMic()">🎤 Speak</button>
+                    <button class="vt-btn vt-btn-secondary" onclick="vtRepeatGreeting()">🔁 Repeat</button>
+                    <button class="vt-btn vt-btn-secondary" onclick="handleCommand('start lesson')">▶ Start Lesson</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Welcome hero -->
+        <div class="welcome-hero">
+            <h2>Welcome back, {% if profile and profile.full_name %}{{ profile.full_name|truncatechars:20 }}{% else %}{{ request.user.username }}{% endif %} 👋</h2>
+            <p>Your personalized learning space for Blind learners.</p>
+            <div class="pts-pill">⭐ {{ progress.points }} points earned</div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value">{{ progress.points }}</div>
+                <div class="stat-label" data-i18n="total_points">Total Points</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📚</div>
+                <div class="stat-value">{{ progress.lessons_completed }}</div>
+                <div class="stat-label" data-i18n="lessons_done">Lessons Done</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">{% if progress.points >= 200 %}🥇{% elif progress.points >= 100 %}🥈{% elif progress.points >= 50 %}🥉{% else %}🔰{% endif %}</div>
+                <div class="stat-value" style="font-size:1.1rem;">{% if progress.points >= 200 %}Expert{% elif progress.points >= 100 %}Inter.{% elif progress.points >= 50 %}Beginner{% else %}Starter{% endif %}</div>
+                <div class="stat-label" data-i18n="badge">Badge</div>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-card">
+            <div class="prog-header">
+                <span class="prog-title" data-i18n="overall_progress">Overall Progress</span>
+                <span class="prog-count">{{ progress.lessons_completed }} / 36 lessons</span>
+            </div>
+            <div class="prog-track">
+                <div class="prog-fill" style="width:{% widthratio progress.lessons_completed 36 100 %}%"></div>
+            </div>
+        </div>
+
+        <!-- Badge -->
+        <div class="badge-card">
+            {% if progress.points >= 200 %}
+                <div class="badge-emoji">🥇</div><div class="badge-info"><div class="badge-title">Expert Badge</div><div class="badge-sub">200+ points — Outstanding work!</div></div>
+            {% elif progress.points >= 100 %}
+                <div class="badge-emoji">🥈</div><div class="badge-info"><div class="badge-title">Intermediate Badge</div><div class="badge-sub">100+ points — Keep it up!</div></div>
+            {% elif progress.points >= 50 %}
+                <div class="badge-emoji">🥉</div><div class="badge-info"><div class="badge-title">Beginner Badge</div><div class="badge-sub">50+ points — Great start!</div></div>
+            {% else %}
+                <div class="badge-emoji">🔰</div><div class="badge-info"><div class="badge-title">No Badge Yet</div><div class="badge-sub">Earn 50 points to unlock your first badge!</div></div>
+            {% endif %}
+        </div>
+
+        <!-- Modules -->
+        <div class="section-heading" data-i18n="learning_modules">Learning Modules</div>
+        <div class="modules">
+            <div class="module-card"><div class="mod-icon">🔤</div><h3 data-i18n="alphabets">Alphabets</h3><p>Learn Braille A–Z</p><a class="go-btn" href="/learning/blind/alphabets/" data-i18n="start">Start →</a></div>
+            <div class="module-card"><div class="mod-icon">🔢</div><h3 data-i18n="numbers">Numbers</h3><p>Learn numbers 1–10</p><a class="go-btn" href="/learning/blind/numbers/">Start →</a></div>
+            <div class="module-card"><div class="mod-icon">📝</div><h3 data-i18n="quiz">Quiz</h3><p>Test your knowledge</p><a class="go-btn" href="/learning/blind/quiz/">Take Quiz →</a></div>
+            <div class="module-card"><div class="mod-icon">🤖</div><h3 data-i18n="ask_assistant">Ask Assistant</h3><p>Chat with your learning bot</p><a class="go-btn" href="/chatbot/">Open Chat →</a></div>
+        </div>
+
+    </div>
+
+    <!-- ── Floating Teacher Avatar ── -->
+    <div class="avatar-widget" id="avatar-widget">
+        <div class="avatar-bubble" id="avatar-bubble"></div>
+        <div class="avatar-circle" id="avatar-circle" onclick="vtRepeatGreeting()" title="Click to hear greeting">
+            <!-- SVG female teacher face -->
+            <svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:10px;">
+                <!-- Hair -->
+                <ellipse cx="23" cy="14" rx="13" ry="10" fill="#4a2c0a"/>
+                <rect x="10" y="14" width="4" height="12" rx="2" fill="#4a2c0a"/>
+                <rect x="32" y="14" width="4" height="12" rx="2" fill="#4a2c0a"/>
+                <!-- Face -->
+                <ellipse cx="23" cy="20" rx="10" ry="11" fill="#f5c5a3"/>
+                <!-- Eyes -->
+                <ellipse cx="19" cy="18" rx="1.8" ry="2" fill="#2d1b00"/>
+                <ellipse cx="27" cy="18" rx="1.8" ry="2" fill="#2d1b00"/>
+                <!-- Eye shine -->
+                <circle cx="19.7" cy="17.2" r="0.6" fill="white"/>
+                <circle cx="27.7" cy="17.2" r="0.6" fill="white"/>
+                <!-- Smile -->
+                <path d="M19 23 Q23 26 27 23" stroke="#c0725a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+                <!-- Collar -->
+                <path d="M13 31 Q23 35 33 31 L33 38 Q23 42 13 38 Z" fill="#7c3aed"/>
+                <path d="M23 31 L20 38 L23 36 L26 38 Z" fill="white"/>
+            </svg>
+            <!-- Mouth bars (audio visualizer) -->
+            <div class="avatar-mouth">
+                <span></span><span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+    </div>
+
+<script src="/static/js/voice_teacher.js"></script>
+    <script>
+        var LESSONS_COMPLETED = {{ progress.lessons_completed }};
+
+        function getNextLessonUrl() {
+            if (LESSONS_COMPLETED < 26) return '/learning/blind/alphabets/lesson/' + LESSONS_COMPLETED + '/';
+            if (LESSONS_COMPLETED < 36) return '/learning/blind/numbers/lesson/' + (LESSONS_COMPLETED - 26) + '/';
+            return '/learning/blind/alphabets/lesson/0/';
+        }
+
+        function handleCommand(t) {
+            var cmd = VoiceTeacher.parseCommand(t);
+            if (cmd === 'nav:chatbot' || /chatbot|assistant/.test(t))
+                VoiceTeacher.speak('Opening the chat assistant.', function(){ window.location.href='/chatbot/'; });
+            else if (cmd === 'nav:quiz')
+                VoiceTeacher.speak('Opening the quiz. Good luck!', function(){ window.location.href='/learning/blind/quiz/'; });
+            else if (cmd === 'nav:alphabets' || /alphabet/.test(t))
+                VoiceTeacher.speak('Opening alphabets.', function(){ window.location.href='/learning/blind/alphabets/'; });
+            else if (cmd === 'nav:numbers' || /number/.test(t))
+                VoiceTeacher.speak('Opening numbers.', function(){ window.location.href='/learning/blind/numbers/'; });
+            else if (cmd === 'nav:lesson' || cmd === 'yes')
+                VoiceTeacher.speak('Starting your next lesson. ' + VoiceTeacher.praise(), function(){ window.location.href=getNextLessonUrl(); });
+            else if (cmd === 'nav:logout')
+                VoiceTeacher.speak('Logging out. Goodbye!', function(){ window.location.href='/users/logout/'; });
+            else if (cmd === 'repeat')
+                VoiceTeacher.repeatLast();
+            else if (cmd === 'help')
+                VoiceTeacher.helpMessage();
+            else if (cmd === 'no')
+                VoiceTeacher.speak('Okay! Take your time. Say start lesson, open quiz, or open chatbot whenever you are ready.');
+            else if (cmd === 'explain' || cmd === 'close')
+                vtRepeatGreeting();
+        }
+
+        function vtRepeatGreeting() {
+            var msg = LESSONS_COMPLETED === 0
+                ? 'Hi! Welcome to Deshshiksha. What would you like to do? Say start lesson, open quiz, open chatbot, open alphabets, or open numbers.'
+                : 'Welcome back! You have completed ' + LESSONS_COMPLETED + ' lessons. Say start lesson to continue, open quiz, or open chatbot.';
+            VoiceTeacher.speak(msg);
+        }
+
+        VoiceTeacher.listenAlwaysOn(function(cmd, transcript) { handleCommand(transcript); });
+        window.addEventListener('load', function() { setTimeout(vtRepeatGreeting, 800); });
+    </script>
+    <script>I18n.buildSwitcher('lang-switcher-bar');</script>
+</body>
+</html>
+
+
+
+

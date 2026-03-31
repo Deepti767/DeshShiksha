@@ -1,0 +1,279 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Assistant - Deshshiksha</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; }
+        header { background: #6a1a8a; color: white; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 1.1rem; display: flex; align-items: center; gap: 0.6rem; }
+        .bot-dot { width: 10px; height: 10px; background: #2ecc71; border-radius: 50%; display: inline-block; }
+        header a { color: white; text-decoration: none; font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 4px; }
+        .voice-bar { background: #f3e8ff; border-bottom: 1px solid #e0c8f8; padding: 0.6rem 1.5rem; display: flex; align-items: center; gap: 1rem; }
+        #vc-avatar { width: 38px; height: 38px; border-radius: 50%; background: #6a1a8a; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; color: white; }
+        #vc-avatar.speaking { animation: vc-speak 0.7s ease-in-out infinite alternate; }
+        #vc-avatar.listening { background: #c0392b; animation: vc-listen 0.5s ease-in-out infinite alternate; }
+        @keyframes vc-speak  { from { box-shadow: 0 0 0 0 rgba(106,26,138,0.5); } to { box-shadow: 0 0 0 12px rgba(106,26,138,0); } }
+        @keyframes vc-listen { from { box-shadow: 0 0 0 0 rgba(192,57,43,0.5);  } to { box-shadow: 0 0 0 12px rgba(192,57,43,0);  } }
+        #vc-status { font-size: 0.82rem; color: #6a1a8a; flex: 1; }
+        .vc-mic-btn { background: #6a1a8a; color: white; border: none; border-radius: 20px; padding: 6px 14px; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
+        .vc-mic-btn:hover { background: #551570; }
+        .chat-window { flex: 1; max-width: 720px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; padding: 1rem; }
+        #messages { flex: 1; overflow-y: auto; padding: 0.5rem 0; display: flex; flex-direction: column; gap: 0.8rem; max-height: calc(100vh - 280px); }
+        .bubble-row { display: flex; align-items: flex-end; gap: 0.5rem; }
+        .bubble-row.user { flex-direction: row-reverse; }
+        .avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .avatar.bot  { background: #6a1a8a; color: white; }
+        .avatar.user { background: #2c3e50; color: white; }
+        .bubble { max-width: 74%; padding: 0.7rem 1rem; border-radius: 16px; font-size: 0.92rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+        .bubble.bot  { background: white; color: #333; border-bottom-left-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .bubble.user { background: #6a1a8a; color: white; border-bottom-right-radius: 4px; }
+        .bubble a.go-link { display: inline-block; margin-top: 0.5rem; background: #6a1a8a; color: white; padding: 5px 14px; border-radius: 20px; font-size: 0.8rem; text-decoration: none; }
+        .typing { display: flex; gap: 4px; padding: 10px 14px; background: white; border-radius: 16px; border-bottom-left-radius: 4px; width: fit-content; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .typing span { width: 7px; height: 7px; background: #aaa; border-radius: 50%; animation: bounce 1s infinite; }
+        .typing span:nth-child(2) { animation-delay: 0.15s; }
+        .typing span:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+        .quick-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; padding: 0.6rem 0; }
+        .quick-btn { background: white; border: 1.5px solid #6a1a8a; color: #6a1a8a; padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; cursor: pointer; font-family: inherit; }
+        .quick-btn:hover { background: #6a1a8a; color: white; }
+        .input-bar { display: flex; gap: 0.5rem; padding: 0.6rem 0 0.4rem; }
+        #user-input { flex: 1; padding: 10px 14px; border: 1.5px solid #ddd; border-radius: 24px; font-size: 0.92rem; font-family: inherit; outline: none; }
+        #user-input:focus { border-color: #6a1a8a; }
+        #send-btn { background: #6a1a8a; color: white; border: none; border-radius: 50%; width: 42px; height: 42px; font-size: 1.1rem; cursor: pointer; }
+        #send-btn:hover { background: #551570; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><span class="bot-dot"></span> Learning Assistant</h1>
+        <a href="/users/dashboard/">Dashboard</a>
+    </header>
+
+    <div class="voice-bar">
+        <div id="vc-avatar">🤖</div>
+        <div id="vc-status">Starting mic...</div>
+        <button class="vc-mic-btn" onclick="startMic()">🎤 Restart Mic</button>
+    </div>
+
+    <div class="chat-window">
+        <div id="messages"></div>
+        <div class="quick-btns">
+            <button class="quick-btn" onclick="sendQuick('Alphabets')">🔤 Alphabets</button>
+            <button class="quick-btn" onclick="sendQuick('Numbers')">🔢 Numbers</button>
+            <button class="quick-btn" onclick="sendQuick('Quiz help')">📝 Quiz Help</button>
+            <button class="quick-btn" onclick="sendQuick('Help')">❓ Help</button>
+            <button class="quick-btn" onclick="sendQuick('What is A?')">A</button>
+            <button class="quick-btn" onclick="sendQuick('What is B?')">B</button>
+            <button class="quick-btn" onclick="sendQuick('What is C?')">C</button>
+        </div>
+        <div class="input-bar">
+            <input id="user-input" type="text" placeholder="Ask me anything... e.g. What is A?" autocomplete="off" />
+            <button id="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <script>
+        var CSRF = '{{ csrf_token }}';
+        var mic = null;
+        var isSpeaking = false;
+
+        // ── Avatar / status ───────────────────────────────────
+        function setVcState(s) { var e = document.getElementById('vc-avatar'); if (e) e.className = s; }
+        function setVcStatus(s) { var e = document.getElementById('vc-status'); if (e) e.textContent = s; }
+
+        // ── TTS — stops mic while speaking, restarts after ────
+        function speakReply(text, onEnd) {
+            if (!window.speechSynthesis) { if (onEnd) onEnd(); return; }
+            window.speechSynthesis.cancel();
+            isSpeaking = true;
+            // Stop mic so it doesn't hear itself
+            if (mic) { try { mic.stop(); } catch(e) {} mic = null; }
+
+            var u = new SpeechSynthesisUtterance(text);
+            u.lang = 'en-US'; u.rate = 0.82; u.pitch = 1.05;
+            setVcState('speaking');
+            setVcStatus(text.substring(0, 80) + (text.length > 80 ? '...' : ''));
+            u.onend = function() {
+                isSpeaking = false;
+                setVcState('');
+                if (onEnd) onEnd();
+                // Restart mic after speaking finishes
+                setTimeout(startMic, 400);
+            };
+            u.onerror = function() {
+                isSpeaking = false;
+                setVcState('');
+                if (onEnd) onEnd();
+                setTimeout(startMic, 400);
+            };
+            window.speechSynthesis.speak(u);
+        }
+
+        // ── Continuous mic — single instance, always on ───────
+        function startMic() {
+            if (isSpeaking) return;   // don't start while bot is talking
+            var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) { setVcStatus('Voice not supported in this browser.'); return; }
+            if (mic) { try { mic.stop(); } catch(e) {} mic = null; }
+
+            mic = new SR();
+            mic.lang = 'en-US';
+            mic.continuous = true;       // stays on — no need to restart
+            mic.interimResults = false;
+            mic.maxAlternatives = 3;
+
+            mic.onstart = function() {
+                setVcState('listening');
+                setVcStatus('Listening... speak your question or command.');
+            };
+
+                        mic.onresult = function(e) {
+                var transcript = e.results[e.results.length - 1][0].transcript.trim();
+                if (!transcript) return;
+                // Barge-in: go back works even while bot is speaking
+                if (/go\s*back|go\s*home|dashboard|home|exit|logout/.test(transcript.toLowerCase())) {
+                    window.speechSynthesis.cancel();
+                    isSpeaking = false;
+                    document.getElementById('user-input').value = transcript;
+                    sendMessage();
+                    return;
+                }
+                // Normal input — skip if bot is mid-sentence
+                if (isSpeaking) return;
+                document.getElementById('user-input').value = transcript;
+                sendMessage();
+            };
+
+            mic.onerror = function(e) {
+                if (e.error === 'no-speech') return;  // ignore silence
+                setVcStatus('Mic error: ' + e.error + '. Press Restart Mic.');
+                mic = null;
+            };
+
+            mic.onend = function() {
+                mic = null;
+                // Auto-restart unless bot is speaking
+                if (!isSpeaking) {
+                    setTimeout(startMic, 500);
+                }
+            };
+
+            mic.start();
+        }
+
+        // ── Navigation parser ─────────────────────────────────
+        function parseNav(text) {
+            var t = text.toLowerCase();
+            if (/open\s+quiz|start\s+quiz|take\s+quiz/.test(t))
+                return { reply: 'Opening the quiz now!', url: '/learning/blind/quiz/' };
+            if (/open\s+alphabet|learn\s+alphabet/.test(t))
+                return { reply: 'Opening alphabets!', url: '/learning/blind/alphabets/' };
+            if (/open\s+number|learn\s+number/.test(t))
+                return { reply: 'Opening numbers!', url: '/learning/blind/numbers/' };
+            if (/go\s*back|go\s*(to\s*)?(home|dashboard)|back\s*to\s*(home|dashboard)|dashboard|home\s*page/.test(t))
+                return { reply: 'Going back to your dashboard!', url: '/users/dashboard/' };
+            if (/logout|log\s+out/.test(t))
+                return { reply: 'Logging out. Goodbye!', url: '/users/logout/' };
+            if (/open\s+chat|chatbot/.test(t))
+                return { reply: 'You are already in the chat assistant!', url: null };
+            return null;
+        }
+
+        // ── Chat bubble ───────────────────────────────────────
+        function addBubble(text, sender, link) {
+            var messages = document.getElementById('messages');
+            var row = document.createElement('div'); row.className = 'bubble-row ' + sender;
+            var av = document.createElement('div'); av.className = 'avatar ' + sender;
+            av.textContent = sender === 'bot' ? '🤖' : '👤';
+            var bubble = document.createElement('div'); bubble.className = 'bubble ' + sender;
+            bubble.textContent = text;
+            if (link) {
+                var a = document.createElement('a'); a.href = link; a.className = 'go-link'; a.textContent = 'Go →';
+                bubble.appendChild(document.createElement('br')); bubble.appendChild(a);
+            }
+            if (sender === 'bot') { row.appendChild(av); row.appendChild(bubble); }
+            else                  { row.appendChild(bubble); row.appendChild(av); }
+            messages.appendChild(row);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function showTyping() {
+            var messages = document.getElementById('messages');
+            var row = document.createElement('div'); row.className = 'bubble-row bot'; row.id = 'typing-row';
+            var av = document.createElement('div'); av.className = 'avatar bot'; av.textContent = '🤖';
+            var t = document.createElement('div'); t.className = 'typing';
+            t.innerHTML = '<span></span><span></span><span></span>';
+            row.appendChild(av); row.appendChild(t); messages.appendChild(row);
+            messages.scrollTop = messages.scrollHeight;
+        }
+        function removeTyping() { var el = document.getElementById('typing-row'); if (el) el.remove(); }
+
+        // ── Send message ──────────────────────────────────────
+        function sendMessage() {
+            var input = document.getElementById('user-input');
+            var text  = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            addBubble(text, 'user', null);
+            showTyping();
+
+            // Stop mic while processing
+            if (mic) { try { mic.stop(); } catch(e) {} mic = null; }
+
+            // Check navigation first
+            var nav = parseNav(text);
+            if (nav) {
+                removeTyping();
+                addBubble(nav.reply, 'bot', null);
+                speakReply(nav.reply, function() {
+                    if (nav.url) setTimeout(function() { window.location.href = nav.url; }, 500);
+                });
+                return;
+            }
+
+            // API call
+            fetch('/chatbot/api/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+                body: JSON.stringify({ message: text })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                removeTyping();
+                var reply = data.reply || 'Sorry, something went wrong.';
+                var link  = data.link  || null;
+                addBubble(reply, 'bot', link);
+                speakReply(reply);   // mic restarts automatically after speaking
+            })
+            .catch(function() {
+                removeTyping();
+                addBubble('Connection error. Please try again.', 'bot', null);
+                setTimeout(startMic, 500);
+            });
+        }
+
+        function sendQuick(text) {
+            document.getElementById('user-input').value = text;
+            sendMessage();
+        }
+
+        document.getElementById('user-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // ── Welcome + start mic ───────────────────────────────
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                var welcome = 'Hi {{ request.user.username }}! I am your learning assistant. Ask me about any letter or number. Say open quiz to take a quiz, or say go back to return to the dashboard.';
+                addBubble(welcome, 'bot', null);
+                speakReply(welcome);  // mic starts automatically after this
+            }, 500);
+        });
+    </script>
+</body>
+</html>
+

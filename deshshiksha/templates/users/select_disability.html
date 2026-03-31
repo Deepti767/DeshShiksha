@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Disability - Deshshiksha</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f4f4; }
+        .box { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); width: 340px; text-align: center; }
+        h2 { color: #2c3e50; margin-bottom: 0.5rem; }
+        p { color: #666; font-size: 0.9rem; margin-bottom: 1.5rem; }
+        .option { display: block; width: 100%; padding: 12px; margin: 8px 0; background: #2c3e50; color: white; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; }
+        .option:hover { background: #3d5166; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Hello, {{ request.user.username }}</h2>
+        <p>Please select your disability type so we can personalize your experience.</p>
+        <form method="post">
+            {% csrf_token %}
+            <button class="option" name="disability" value="deaf">Deaf</button>
+            <button class="option" name="disability" value="blind">Blind</button>
+            <button class="option" name="disability" value="cognitive">Cognitive</button>
+        </form>
+    </div>
+</body>
+</html>

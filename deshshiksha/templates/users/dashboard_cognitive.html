@@ -1,0 +1,124 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Deshshiksha</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="/static/css/i18n.css">
+    <script src="/static/js/i18n.js"></script>
+</head>
+<body class="theme-cognitive">
+
+    <nav class="navbar">
+        <a class="navbar-brand" href="/">
+            <span class="logo-icon">🎓</span>
+            <span class="logo-text">Deshshiksha</span>
+        </a>
+        <div class="navbar-right">
+            <span class="navbar-user">Hello, <span>{% if profile and profile.full_name %}{{ profile.full_name|truncatechars:14 }}{% else %}{{ request.user.username }}{% endif %}</span></span>
+            <a class="logout-btn" href="/users/logout/">Logout</a>
+        </div>
+    </nav>
+    <div class="navbar-lang-row">
+        <span class="lang-label">🌐 Language:</span>
+        <div id="lang-switcher-bar"></div>
+    </div>
+
+    <div class="page">
+
+        <!-- Welcome hero -->
+        <div class="welcome-hero">
+            <h2>Welcome back, {% if profile and profile.full_name %}{{ profile.full_name|truncatechars:20 }}{% else %}{{ request.user.username }}{% endif %} 👋</h2>
+            <p>Your personalized learning space for Cognitive learners.</p>
+            <div class="pts-pill">⭐ {{ progress.points }} points earned</div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value">{{ progress.points }}</div>
+                <div class="stat-label" data-i18n="total_points">Total Points</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📚</div>
+                <div class="stat-value">{{ progress.lessons_completed }}</div>
+                <div class="stat-label" data-i18n="lessons_done">Lessons Done</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    {% if progress.points >= 200 %}🥇{% elif progress.points >= 100 %}🥈{% elif progress.points >= 50 %}🥉{% else %}🔰{% endif %}
+                </div>
+                <div class="stat-value" style="font-size:1.1rem;">
+                    {% if progress.points >= 200 %}Expert{% elif progress.points >= 100 %}Inter.{% elif progress.points >= 50 %}Beginner{% else %}Starter{% endif %}
+                </div>
+                <div class="stat-label" data-i18n="badge">Badge</div>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-card">
+            <div class="prog-header">
+                <span class="prog-title" data-i18n="overall_progress">Overall Progress</span>
+                <span class="prog-count">{{ progress.lessons_completed }} / 36 lessons</span>
+            </div>
+            <div class="prog-track">
+                <div class="prog-fill" style="width:{% widthratio progress.lessons_completed 36 100 %}%"></div>
+            </div>
+        </div>
+
+        <!-- Badge -->
+        <div class="badge-card">
+            {% if progress.points >= 200 %}
+                <div class="badge-emoji">🥇</div>
+                <div class="badge-info"><div class="badge-title">Expert Badge</div><div class="badge-sub">200+ points — Outstanding work!</div></div>
+            {% elif progress.points >= 100 %}
+                <div class="badge-emoji">🥈</div>
+                <div class="badge-info"><div class="badge-title">Intermediate Badge</div><div class="badge-sub">100+ points — Keep it up!</div></div>
+            {% elif progress.points >= 50 %}
+                <div class="badge-emoji">🥉</div>
+                <div class="badge-info"><div class="badge-title">Beginner Badge</div><div class="badge-sub">50+ points — Great start!</div></div>
+            {% else %}
+                <div class="badge-emoji">🔰</div>
+                <div class="badge-info"><div class="badge-title">No Badge Yet</div><div class="badge-sub">Earn 50 points to unlock your first badge!</div></div>
+            {% endif %}
+        </div>
+
+        <!-- Modules -->
+        <div class="section-heading" data-i18n="learning_modules">Learning Modules</div>
+        <div class="modules">
+            <div class="module-card">
+                <div class="mod-icon">🔤</div>
+                <h3 data-i18n="alphabets">Alphabets</h3>
+                <p>Learn A–Z with pictures</p>
+                <a class="go-btn" href="/learning/cognitive/alphabets/" data-i18n="start">Start →</a>
+            </div>
+            <div class="module-card">
+                <div class="mod-icon">🔢</div>
+                <h3 data-i18n="numbers">Numbers</h3>
+                <p>Learn numbers with visuals</p>
+                <a class="go-btn" href="/learning/cognitive/numbers/">Start →</a>
+            </div>
+            <div class="module-card">
+                <div class="mod-icon">📝</div>
+                <h3 data-i18n="quiz">Quiz</h3>
+                <p>Test your knowledge</p>
+                <a class="go-btn" href="/learning/cognitive/quiz/">Take Quiz →</a>
+            </div>
+            <div class="module-card">
+                <div class="mod-icon">🤖</div>
+                <h3 data-i18n="ask_assistant">Ask Assistant</h3>
+                <p>Chat with your learning bot</p>
+                <a class="go-btn" href="/chatbot/">Open Chat →</a>
+            </div>
+        </div>
+
+    </div>
+    <script>I18n.buildSwitcher('lang-switcher-bar');</script>
+</body>
+</html>
+
+
+

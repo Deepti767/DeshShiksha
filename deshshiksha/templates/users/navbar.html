@@ -1,0 +1,85 @@
+{% load static %}
+<!-- Shared navbar — include with {% include 'users/navbar.html' %} -->
+<style>
+    .top-navbar {
+        background: var(--nav-bg, linear-gradient(135deg,#1e40af,#2563eb));
+        padding: 0 2rem;
+        height: 62px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.15);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+    .top-navbar .nb-brand { display: flex; align-items: center; gap: 0.6rem; color: white; text-decoration: none; }
+    .top-navbar .nb-brand .nb-logo { font-size: 1.5rem; }
+    .top-navbar .nb-brand .nb-title { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+    .top-navbar .nb-right { display: flex; align-items: center; gap: 0.8rem; position: relative; }
+    .top-navbar .nb-greeting { color: rgba(255,255,255,0.85); font-size: 0.88rem; font-weight: 500; }
+    .top-navbar .nb-greeting strong { color: white; }
+    .top-navbar .nb-avatar {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: rgba(255,255,255,0.25);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem; cursor: pointer; border: 2px solid rgba(255,255,255,0.3);
+        transition: background 0.15s;
+    }
+    .top-navbar .nb-avatar:hover { background: rgba(255,255,255,0.35); }
+    .nb-dropdown {
+        display: none;
+        position: absolute;
+        top: 48px; right: 0;
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        min-width: 180px;
+        overflow: hidden;
+        z-index: 200;
+    }
+    .nb-dropdown.open { display: block; animation: dd-in 0.15s ease; }
+    @keyframes dd-in { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+    .nb-dropdown .dd-header { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; }
+    .nb-dropdown .dd-name { font-size: 0.9rem; font-weight: 700; color: #1e293b; }
+    .nb-dropdown .dd-type { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; text-transform: capitalize; }
+    .nb-dropdown a { display: flex; align-items: center; gap: 0.6rem; padding: 10px 16px; font-size: 0.88rem; color: #475569; text-decoration: none; transition: background 0.12s; }
+    .nb-dropdown a:hover { background: #f8fafc; color: #1e293b; }
+    .nb-dropdown .dd-logout { color: #ef4444; }
+    .nb-dropdown .dd-logout:hover { background: #fff1f2; }
+    @media (max-width: 480px) { .top-navbar .nb-greeting { display: none; } .top-navbar { padding: 0 1rem; } }
+</style>
+
+<nav class="top-navbar">
+    <a class="nb-brand" href="/">
+        <span class="nb-logo">🎓</span>
+        <span class="nb-title">Deshshiksha</span>
+    </a>
+    <div class="nb-right">
+        <span class="nb-greeting">Hi, <strong>{% if profile and profile.full_name %}{{ profile.full_name|truncatechars:14 }}{% else %}{{ request.user.username }}{% endif %}</strong> 👋</span>
+        <div class="nb-avatar" onclick="toggleDropdown()" title="Profile">
+            {{ request.user.username|first|upper }}
+        </div>
+        <div class="nb-dropdown" id="nb-dropdown">
+            <div class="dd-header">
+                <div class="dd-name">{% if profile and profile.full_name %}{{ profile.full_name }}{% else %}{{ request.user.username }}{% endif %}</div>
+                <div class="dd-type">{% if profile and profile.disability %}{{ profile.disability }} learner{% else %}Learner{% endif %}</div>
+            </div>
+            <a href="/users/profile-setup/">✏️ Edit Profile</a>
+            <a href="/users/dashboard/">🏠 Dashboard</a>
+            <a href="/users/logout/" class="dd-logout">🚪 Logout</a>
+        </div>
+    </div>
+</nav>
+<script>
+    function toggleDropdown() {
+        var dd = document.getElementById('nb-dropdown');
+        dd.classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.nb-right')) {
+            var dd = document.getElementById('nb-dropdown');
+            if (dd) dd.classList.remove('open');
+        }
+    });
+</script>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deshshiksha</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f4f4; }
+        h1 { color: #2c3e50; }
+        nav { margin-top: 1rem; }
+        nav a { margin: 0 10px; color: #2c3e50; text-decoration: none; font-size: 0.95rem; }
+        nav a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Deshshiksha</h1>
+    <nav>
+        {% if user.is_authenticated %}
+            <span>Hello, {{ user.username }}</span>
+            <a href="/users/logout/">Logout</a>
+        {% else %}
+            <a href="/users/login/">Login</a>
+            <a href="/users/register/">Register</a>
+        {% endif %}
+    </nav>
+</body>
+</html>

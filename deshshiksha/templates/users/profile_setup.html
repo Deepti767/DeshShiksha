@@ -1,0 +1,134 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Setup - Deshshiksha</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', Arial, sans-serif; min-height: 100vh; background: linear-gradient(135deg,#1e40af,#7c3aed,#0891b2); display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .card { background: white; border-radius: 24px; padding: 2.5rem 2rem; width: 100%; max-width: 460px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+        .logo { text-align: center; margin-bottom: 1.8rem; }
+        .logo .logo-icon { font-size: 2.8rem; display: block; margin-bottom: 0.3rem; }
+        .logo h1 { font-size: 1.6rem; font-weight: 800; color: #1e293b; }
+        .logo p  { font-size: 0.85rem; color: #94a3b8; margin-top: 3px; }
+        .step-hint { background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; padding: 8px 12px; font-size: 0.8rem; color: #15803d; margin-bottom: 1.4rem; text-align: center; font-weight: 500; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; font-size: 0.82rem; font-weight: 600; color: #475569; margin-bottom: 5px; }
+        input[type="text"], input[type="date"], input[type="number"], select {
+            width: 100%; padding: 11px 14px; border: 2px solid #e2e8f0; border-radius: 12px;
+            font-size: 0.95rem; font-family: inherit; outline: none; transition: border-color 0.2s; color: #1e293b; background: white;
+        }
+        input:focus, select:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+        input[readonly] { background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
+        .age-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .disability-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-top: 0.4rem; }
+        .dis-option { border: 2px solid #e2e8f0; border-radius: 12px; padding: 0.9rem 0.7rem; text-align: center; cursor: pointer; transition: all 0.15s; }
+        .dis-option:hover { border-color: #6366f1; background: #f5f3ff; }
+        .dis-option input[type="radio"] { display: none; }
+        .dis-option.selected { border-color: #4f46e5; background: #eef2ff; }
+        .dis-option .dis-icon { font-size: 1.8rem; display: block; margin-bottom: 0.3rem; }
+        .dis-option .dis-label { font-size: 0.82rem; font-weight: 700; color: #334155; }
+        .dis-option .dis-sub   { font-size: 0.68rem; color: #94a3b8; margin-top: 2px; }
+        .btn-save { width: 100%; padding: 13px; background: linear-gradient(135deg,#4f46e5,#7c3aed); color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit; box-shadow: 0 4px 16px rgba(99,102,241,0.35); transition: transform 0.15s; margin-top: 1rem; }
+        .btn-save:hover { transform: translateY(-2px); }
+        .field-errors { list-style: none; padding: 0; margin-top: 4px; }
+        .field-errors li { font-size: 0.78rem; color: #dc2626; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">
+            <span class="logo-icon">👤</span>
+            <h1>Profile Setup</h1>
+            <p>Tell us about yourself</p>
+        </div>
+        <div class="step-hint">Step 2 of 2 — Complete your profile to get started</div>
+
+        <form method="post" id="profile-form">
+            {% csrf_token %}
+
+            <!-- Full Name -->
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="full_name" value="{{ form.full_name.value|default:'' }}" placeholder="Enter your full name">
+                {% if form.full_name.errors %}<ul class="field-errors">{% for e in form.full_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+            </div>
+
+            <!-- DOB + Age -->
+            <div class="age-row">
+                <div class="form-group">
+                    <label>Date of Birth</label>
+                    <input type="date" name="dob" id="dob-input" value="{{ form.dob.value|default:'' }}" onchange="calcAge()">
+                    {% if form.dob.errors %}<ul class="field-errors">{% for e in form.dob.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label>Age (auto)</label>
+                    <input type="number" name="age" id="age-input" value="{{ form.age.value|default:'' }}" readonly placeholder="Auto-calculated">
+                </div>
+            </div>
+
+            <!-- Disability -->
+            <div class="form-group">
+                <label>Disability Type</label>
+                <div class="disability-grid" id="dis-grid">
+                    <label class="dis-option" id="opt-deaf">
+                        <input type="radio" name="disability" value="deaf" {% if form.disability.value == 'deaf' %}checked{% endif %}>
+                        <span class="dis-icon">🤟</span>
+                        <span class="dis-label">Deaf</span>
+                        <span class="dis-sub">Hearing impaired</span>
+                    </label>
+                    <label class="dis-option" id="opt-blind">
+                        <input type="radio" name="disability" value="blind" {% if form.disability.value == 'blind' %}checked{% endif %}>
+                        <span class="dis-icon">👁️</span>
+                        <span class="dis-label">Blind</span>
+                        <span class="dis-sub">Visually impaired</span>
+                    </label>
+                    <label class="dis-option" id="opt-dumb">
+                        <input type="radio" name="disability" value="dumb" {% if form.disability.value == 'dumb' %}checked{% endif %}>
+                        <span class="dis-icon">🗣️</span>
+                        <span class="dis-label">Dumb</span>
+                        <span class="dis-sub">Speech impaired</span>
+                    </label>
+                    <label class="dis-option" id="opt-cognitive">
+                        <input type="radio" name="disability" value="cognitive" {% if form.disability.value == 'cognitive' %}checked{% endif %}>
+                        <span class="dis-icon">🧠</span>
+                        <span class="dis-label">Cognitive</span>
+                        <span class="dis-sub">Learning support</span>
+                    </label>
+                </div>
+                {% if form.disability.errors %}<ul class="field-errors">{% for e in form.disability.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+            </div>
+
+            <button class="btn-save" type="submit">Save & Continue →</button>
+        </form>
+    </div>
+
+    <script>
+        // Auto-calculate age from DOB
+        function calcAge() {
+            var dob = document.getElementById('dob-input').value;
+            if (!dob) return;
+            var today = new Date();
+            var birth = new Date(dob);
+            var age   = today.getFullYear() - birth.getFullYear();
+            var m     = today.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+            document.getElementById('age-input').value = age > 0 ? age : '';
+        }
+
+        // Highlight selected disability card
+        document.querySelectorAll('.dis-option input[type="radio"]').forEach(function(radio) {
+            if (radio.checked) radio.closest('.dis-option').classList.add('selected');
+            radio.addEventListener('change', function() {
+                document.querySelectorAll('.dis-option').forEach(function(o){ o.classList.remove('selected'); });
+                this.closest('.dis-option').classList.add('selected');
+            });
+        });
+
+        // Run on load if DOB already set
+        calcAge();
+    </script>
+</body>
+</html>

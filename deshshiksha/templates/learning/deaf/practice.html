@@ -1,0 +1,355 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Practice - Deshshiksha</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', Arial, sans-serif; background: #f0f6ff; min-height: 100vh; }
+
+        header { background: linear-gradient(135deg,#1e40af,#3b82f6); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+        header h1 { font-size: 1.2rem; font-weight: 700; }
+        header a { color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 7px 16px; border-radius: 50px; font-size: 0.85rem; }
+
+        .page { max-width: 960px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+        /* Score bar */
+        .score-bar { background: white; border-radius: 16px; padding: 1rem 1.6rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); flex-wrap: wrap; }
+        .score-item { text-align: center; }
+        .score-item .sv { font-size: 1.8rem; font-weight: 900; color: #2563eb; }
+        .score-item .sl { font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+        .progress-mini { flex: 1; min-width: 160px; }
+        .progress-mini .pm-label { font-size: 0.78rem; color: #64748b; margin-bottom: 5px; font-weight: 600; }
+        .pm-track { background: #dbeafe; border-radius: 50px; height: 10px; overflow: hidden; }
+        .pm-fill  { background: linear-gradient(90deg,#2563eb,#06b6d4); height: 10px; border-radius: 50px; transition: width 0.4s; }
+
+        /* Main layout */
+        .practice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        @media (max-width: 640px) { .practice-grid { grid-template-columns: 1fr; } }
+
+        /* Sign card */
+        .sign-card { background: white; border-radius: 20px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 2rem 1.5rem; text-align: center; }
+        .sign-card .sc-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #94a3b8; margin-bottom: 0.8rem; }
+        .sign-card .sc-letter { font-size: 5rem; font-weight: 900; color: #1d4ed8; line-height: 1; margin-bottom: 0.3rem; }
+        .sign-card .sc-emoji  { font-size: 3.5rem; margin-bottom: 0.5rem; }
+        .sign-card .sc-word   { font-size: 1.1rem; font-weight: 700; color: #334155; margin-bottom: 0.8rem; }
+        .sign-card .sc-hint   { font-size: 0.85rem; color: #64748b; background: #f0f6ff; padding: 0.6rem 1rem; border-radius: 10px; line-height: 1.5; }
+
+        /* Camera card */
+        .camera-card { background: white; border-radius: 20px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 1.2rem; display: flex; flex-direction: column; gap: 0.8rem; }
+        .cam-header { display: flex; justify-content: space-between; align-items: center; }
+        .cam-header h3 { font-size: 0.9rem; font-weight: 700; color: #1e293b; }
+        .cam-live { background: #dcfce7; color: #15803d; font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 50px; display: none; }
+        .cam-live.show { display: inline-block; }
+        .video-wrap { position: relative; border-radius: 14px; overflow: hidden; background: #0f172a; aspect-ratio: 4/3; }
+        .video-wrap video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block; }
+        .video-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+        .start-cam-btn { background: #2563eb; color: white; border: none; border-radius: 50px; padding: 12px 28px; font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: inherit; box-shadow: 0 4px 16px rgba(37,99,235,0.4); transition: transform 0.15s; }
+        .start-cam-btn:hover { transform: scale(1.04); }
+
+        /* Gesture status */
+        .gesture-status { border: 2px solid #e2e8f0; border-radius: 12px; padding: 0.8rem 1rem; transition: all 0.25s; }
+        .gesture-status .gs-text { font-size: 0.95rem; font-weight: 700; color: #94a3b8; }
+        .hold-track { background: #f1f5f9; border-radius: 50px; height: 8px; margin-top: 6px; overflow: hidden; }
+        .hold-fill  { height: 8px; border-radius: 50px; width: 0%; background: #2563eb; transition: width 0.1s; }
+
+        /* Feedback banner */
+        .feedback { border-radius: 16px; padding: 1.2rem 1.6rem; text-align: center; display: none; animation: pop-in 0.3s ease; }
+        .feedback.show { display: block; }
+        .feedback.correct { background: #dcfce7; border: 2px solid #86efac; }
+        .feedback.wrong   { background: #fee2e2; border: 2px solid #fca5a5; }
+        .feedback .fb-icon { font-size: 2.5rem; margin-bottom: 0.3rem; }
+        .feedback .fb-text { font-size: 1.1rem; font-weight: 800; }
+        .feedback.correct .fb-text { color: #15803d; }
+        .feedback.wrong   .fb-text { color: #b91c1c; }
+        .feedback .fb-sub  { font-size: 0.85rem; color: #64748b; margin-top: 4px; }
+        @keyframes pop-in { from{transform:scale(0.9);opacity:0} to{transform:scale(1);opacity:1} }
+
+        /* Navigation row */
+        .nav-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .nav-btn { flex: 1; padding: 12px; border: none; border-radius: 50px; font-size: 0.92rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.15s, box-shadow 0.15s; }
+        .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+        .btn-prev { background: #f1f5f9; color: #475569; }
+        .btn-next { background: linear-gradient(135deg,#2563eb,#1d4ed8); color: white; box-shadow: 0 4px 14px rgba(37,99,235,0.3); }
+        .btn-check { background: linear-gradient(135deg,#059669,#047857); color: white; box-shadow: 0 4px 14px rgba(5,150,105,0.3); }
+
+        /* Letter selector */
+        .letter-selector { background: white; border-radius: 16px; padding: 1.2rem 1.4rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .letter-selector h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #94a3b8; margin-bottom: 0.8rem; }
+        .letter-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .lchip { width: 44px; height: 44px; border-radius: 10px; border: 2px solid #e2e8f0; background: white; font-size: 1rem; font-weight: 800; color: #1d4ed8; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+        .lchip:hover { border-color: #3b82f6; background: #dbeafe; transform: translateY(-2px); }
+        .lchip.active { border-color: #2563eb; background: #2563eb; color: white; }
+        .lchip.done   { border-color: #22c55e; background: #dcfce7; color: #15803d; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🤟 Sign Practice Mode</h1>
+        <a href="/users/dashboard/">← Dashboard</a>
+    </header>
+
+    <div class="page">
+
+        <!-- Score bar -->
+        <div class="score-bar">
+            <div class="score-item"><div class="sv" id="sc-points">{{ progress.points }}</div><div class="sl">Total Points</div></div>
+            <div class="score-item"><div class="sv" id="sc-correct">0</div><div class="sl">Correct</div></div>
+            <div class="score-item"><div class="sv" id="sc-streak">0</div><div class="sl">Streak 🔥</div></div>
+            <div class="progress-mini">
+                <div class="pm-label">Session Progress</div>
+                <div class="pm-track"><div class="pm-fill" id="pm-fill" style="width:0%"></div></div>
+            </div>
+        </div>
+
+        <!-- Practice grid -->
+        <div class="practice-grid">
+
+            <!-- Sign to copy -->
+            <div class="sign-card">
+                <div class="sc-label">Copy this sign</div>
+                <div class="sc-letter" id="sc-letter">A</div>
+                <div class="sc-emoji"  id="sc-emoji">🍎</div>
+                <div class="sc-word"   id="sc-word">Apple</div>
+                <div class="sc-hint"   id="sc-hint">Closed fist, thumb on side</div>
+            </div>
+
+            <!-- Camera -->
+            <div class="camera-card">
+                <div class="cam-header">
+                    <h3>Your Camera</h3>
+                    <span class="cam-live" id="cam-live">● LIVE</span>
+                </div>
+                <div class="video-wrap">
+                    <video id="practice-video" autoplay playsinline muted></video>
+                    <div class="video-overlay" id="cam-overlay">
+                        <button class="start-cam-btn" onclick="startPracticeCamera()">📷 Start Camera</button>
+                    </div>
+                </div>
+                <div class="gesture-status" id="gesture-status">
+                    <div class="gs-text" id="gs-text">🤚 Start camera to begin</div>
+                    <div class="hold-track"><div class="hold-fill" id="hold-fill"></div></div>
+                </div>
+                <button class="nav-btn btn-check" onclick="checkNow()">✋ Check My Sign Now</button>
+            </div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="feedback" id="feedback">
+            <div class="fb-icon" id="fb-icon"></div>
+            <div class="fb-text" id="fb-text"></div>
+            <div class="fb-sub"  id="fb-sub"></div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-row" style="margin-bottom:1.5rem;">
+            <button class="nav-btn btn-prev" onclick="prevSign()">← Previous</button>
+            <button class="nav-btn btn-next" onclick="nextSign()">Next →</button>
+        </div>
+
+        <!-- Letter selector -->
+        <div class="letter-selector">
+            <h3>Jump to any letter or number</h3>
+            <div class="letter-chips" id="letter-chips"></div>
+        </div>
+
+    </div>
+
+    <script src="{% static 'js/sign_practice.js' %}"></script>
+    <script>
+        // ── Data ──────────────────────────────────────────────
+        var ITEMS = {{ items_json|safe }};
+        var currentIdx  = 0;
+        var sessionScore = 0;
+        var correct      = 0;
+        var streak       = 0;
+        var done         = {};   // { idx: true } for completed signs
+        var CSRF         = '{{ csrf_token }}';
+
+        // MediaPipe state
+        var hands  = null;
+        var camera = null;
+        var lastLM = null;   // latest landmarks
+        var holdCount = 0;
+        var lastGesture = '';
+        const HOLD_FRAMES = 20;
+
+        // ── Render current sign ───────────────────────────────
+        function renderSign() {
+            var item = ITEMS[currentIdx];
+            document.getElementById('sc-letter').textContent = item.key;
+            document.getElementById('sc-emoji').textContent  = item.emoji;
+            document.getElementById('sc-word').textContent   = item.word;
+            var rule = SignPractice.SIGN_RULES[item.key];
+            document.getElementById('sc-hint').textContent   = rule ? rule.hint : 'Show the sign for ' + item.key;
+            hideFeedback();
+            document.getElementById('hold-fill').style.width = '0%';
+            document.getElementById('gs-text').textContent   = '🤚 Show the sign for ' + item.key;
+
+            // Update chip highlight
+            document.querySelectorAll('.lchip').forEach(function(c, i) {
+                c.className = 'lchip' + (i === currentIdx ? ' active' : '') + (done[i] ? ' done' : '');
+            });
+
+            // Progress
+            var pct = Math.round((Object.keys(done).length / ITEMS.length) * 100);
+            document.getElementById('pm-fill').style.width = pct + '%';
+        }
+
+        // ── Build letter chips ────────────────────────────────
+        function buildChips() {
+            var container = document.getElementById('letter-chips');
+            ITEMS.forEach(function(item, i) {
+                var btn = document.createElement('button');
+                btn.className = 'lchip';
+                btn.textContent = item.key;
+                btn.onclick = function() { currentIdx = i; renderSign(); };
+                container.appendChild(btn);
+            });
+        }
+
+        // ── Navigation ────────────────────────────────────────
+        function nextSign() {
+            currentIdx = (currentIdx + 1) % ITEMS.length;
+            renderSign();
+        }
+        function prevSign() {
+            currentIdx = (currentIdx - 1 + ITEMS.length) % ITEMS.length;
+            renderSign();
+        }
+
+        // ── Feedback ──────────────────────────────────────────
+        function showFeedback(isCorrect, detail) {
+            var fb = document.getElementById('feedback');
+            fb.className = 'feedback show ' + (isCorrect ? 'correct' : 'wrong');
+            document.getElementById('fb-icon').textContent = isCorrect ? '✅' : '❌';
+            document.getElementById('fb-text').textContent = isCorrect ? 'Correct! Great sign!' : 'Try Again!';
+            document.getElementById('fb-sub').textContent  = detail || '';
+
+            if (isCorrect) {
+                done[currentIdx] = true;
+                correct++;
+                streak++;
+                sessionScore += 10;
+                document.getElementById('sc-correct').textContent = correct;
+                document.getElementById('sc-streak').textContent  = streak;
+                document.getElementById('sc-points').textContent  = parseInt(document.getElementById('sc-points').textContent) + 10;
+
+                // Award points via API
+                fetch('/learning/deaf/practice/award/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ points: 10 })
+                }).catch(function(){});
+
+                // Auto-advance after 1.8s
+                setTimeout(nextSign, 1800);
+            } else {
+                streak = 0;
+                document.getElementById('sc-streak').textContent = 0;
+            }
+        }
+
+        function hideFeedback() {
+            document.getElementById('feedback').className = 'feedback';
+        }
+
+        // ── Manual check button ───────────────────────────────
+        function checkNow() {
+            if (!lastLM) {
+                document.getElementById('gs-text').textContent = '⚠️ No hand detected. Show your hand to the camera.';
+                return;
+            }
+            var item   = ITEMS[currentIdx];
+            var result = SignPractice.matchSign(item.key, lastLM);
+            var detail = 'Detected: ' + result.extendedFingers + ' fingers extended.';
+            showFeedback(result.match, detail);
+        }
+
+        // ── MediaPipe setup ───────────────────────────────────
+        function startPracticeCamera() {
+            var overlay = document.getElementById('cam-overlay');
+            overlay.innerHTML = '<div style="color:white;font-size:0.85rem;">⏳ Starting...</div>';
+
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    stream.getTracks().forEach(function(t) { t.stop(); });
+
+                    hands = new Hands({
+                        locateFile: function(f) {
+                            return 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/' + f;
+                        }
+                    });
+                    hands.setOptions({ maxNumHands:1, modelComplexity:0, minDetectionConfidence:0.65, minTrackingConfidence:0.5 });
+                    hands.onResults(onHandResults);
+
+                    var video = document.getElementById('practice-video');
+                    camera = new Camera(video, {
+                        onFrame: async function() { if (hands) await hands.send({ image: video }); },
+                        width: 320, height: 240
+                    });
+                    return camera.start();
+                })
+                .then(function() {
+                    overlay.style.display = 'none';
+                    document.getElementById('cam-live').className = 'cam-live show';
+                    document.getElementById('gs-text').textContent = '🤚 Show the sign for ' + ITEMS[currentIdx].key;
+                })
+                .catch(function(err) {
+                    overlay.innerHTML = '<div style="color:#fca5a5;padding:1rem;text-align:center;font-size:0.85rem;">⚠️ ' + (err.name === 'NotAllowedError' ? 'Camera permission denied' : err.message) + '</div>';
+                });
+        }
+
+        // ── Process hand results ──────────────────────────────
+        function onHandResults(results) {
+            if (!results.multiHandLandmarks || !results.multiHandLandmarks.length) {
+                lastLM = null;
+                holdCount = 0;
+                document.getElementById('hold-fill').style.width = '0%';
+                document.getElementById('gs-text').textContent = '🤚 Show your hand';
+                return;
+            }
+
+            lastLM = results.multiHandLandmarks[0];
+            var item   = ITEMS[currentIdx];
+            var result = SignPractice.matchSign(item.key, lastLM);
+
+            var gestureKey = result.match ? 'match' : 'no_match';
+
+            if (gestureKey === lastGesture) {
+                holdCount++;
+            } else {
+                lastGesture = gestureKey;
+                holdCount = 1;
+            }
+
+            var pct = Math.min(100, (holdCount / HOLD_FRAMES) * 100);
+            document.getElementById('hold-fill').style.width = pct + '%';
+            document.getElementById('hold-fill').style.background = result.match ? '#22c55e' : '#f59e0b';
+
+            if (result.match) {
+                document.getElementById('gs-text').textContent = '✅ Looking good! Hold steady...';
+                document.getElementById('gs-text').style.color = '#15803d';
+            } else {
+                document.getElementById('gs-text').textContent = '🤚 ' + result.extendedFingers + ' fingers detected — adjust your hand';
+                document.getElementById('gs-text').style.color = '#d97706';
+            }
+
+            // Auto-confirm after holding
+            if (holdCount >= HOLD_FRAMES) {
+                holdCount = 0;
+                lastGesture = '';
+                showFeedback(result.match, 'Detected: ' + result.extendedFingers + ' fingers.');
+            }
+        }
+
+        // ── Init ──────────────────────────────────────────────
+        buildChips();
+        renderSign();
+    </script>
+</body>
+</html>
